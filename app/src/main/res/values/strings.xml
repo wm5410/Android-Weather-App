@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">OurAssignmentThree</string>
+    <string name="app_name">Map Marker</string>
 
     <string name="bt_start">Start</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="search">Search</string>
 </resources>
