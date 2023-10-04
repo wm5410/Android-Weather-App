@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
-
     <SearchView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -14,7 +13,6 @@
         android:layout_margin="10dp"
         android:queryHint="@string/search"
         />
-
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -22,7 +20,6 @@
         android:layout_height="0dp"
         android:layout_weight="7"
         />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
