@@ -44,43 +44,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        checkPermissionsGranted();
 
-        fusedLocationProviderCLient = LocationServices.getFusedLocationProviderClient(this);
-        getLastKnownLocation();
+
+        //if(mMap == null){
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+            mapFragment.getMapAsync(MapsActivity.this);
+        //}
+        checkPermissionsGranted();
+        //fusedLocationProviderCLient = LocationServices.getFusedLocationProviderClient(this);
+
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        getLastKnownLocation();
         if(currentLocation != null){
             latitude = currentLocation.getLatitude();
             longitude = currentLocation.getLongitude();
 
             LatLng myLocation = new LatLng(latitude, longitude);
 
-            //Set the marker to be the orange drawable
-            BitmapDescriptor customMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_marker_orange);
-            //Add marker to the current location and name it "Current Location"
-            mMap.addMarker(new MarkerOptions().position(myLocation).icon(customMarker).title("My Current Location"));
-            //Move the camera to where the current location is
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(myLocation));
+//            //Set the marker to be the orange drawable
+//            BitmapDescriptor customMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_marker_orange);
+//            //Add marker to the current location and name it "Current Location"
+//            mMap.addMarker(new MarkerOptions().position(myLocation).icon(customMarker).title("My Current Location"));
+//            //Move the camera to where the current location is
+//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 15));
+
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == FINE_PERMISSION_CODE){
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                getLastKnownLocation();
-            }
-            else{
-                Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if(requestCode == FINE_PERMISSION_CODE){
+//            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+//                //getLastKnownLocation();
+//            }
+//            else{
+//                Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
 
     public void checkPermissionsGranted() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -142,16 +150,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.d("LocationDebug", "Latitude: " + currentLocation.getLatitude() + ", Longitude: " + currentLocation.getLongitude());
 
                     //Initialize the map only if it hasn't been initialized yet
-                    if(mMap == null){
-                        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-                        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-                        mapFragment.getMapAsync(MapsActivity.this);
-                    }
+                    LatLng newLat = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                    showMarker(newLat, "Current location");
                 }
                 else{
                     Log.e("LocationDebug", "Location is null");
                 }
             }
         });
+    }
+
+    public void showMarker(LatLng location, String markerTitle){
+        //Set the marker to be the orange drawable
+        BitmapDescriptor customMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_marker_orange);
+        //Add marker to the current location and name it "Current Location"
+        mMap.addMarker(new MarkerOptions().position(location).icon(customMarker).title(markerTitle));
+        //Move the camera to where the current location is
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
     }
 }
