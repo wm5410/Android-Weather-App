@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -27,6 +28,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.ourassignmentthree.databinding.ActivityMapsBinding;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+
+import java.util.Arrays;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private final int FINE_PERMISSION_CODE = 1;
@@ -41,9 +48,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Initialize Places API (need to add our key)
+        Places.initialize(getApplicationContext(), "YOUR_API_KEY");
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapsActivity.this);
         checkPermissionsGranted();
+
+        //Code for autocomplete fragment
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                // Handle the selected place
+                LatLng selectedLocation = place.getLatLng();
+                updateMapLocation(selectedLocation.latitude, selectedLocation.longitude);
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                // Handle the error
+            }
+        });
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -119,4 +147,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Move the camera to where the current location is
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
     }
+
+    // Handle location updates or get last known location here
+    private void updateMapLocation(double latitude, double longitude) {
+        System.out.println("Selected Location: " + latitude + ", " + longitude);
+    }
+
 }
