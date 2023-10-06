@@ -50,7 +50,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(binding.getRoot());
 
         // Initialize Places API (need to add our key)
-        Places.initialize(getApplicationContext(), "YOUR_API_KEY");
+        Places.initialize(getApplicationContext(), "AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8");
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapsActivity.this);
@@ -70,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onError(@NonNull Status status) {
                 // Handle the error
+                Log.i("LocationDebug", "An error occurred: " + status);
             }
         });
     }
@@ -152,5 +153,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void updateMapLocation(double latitude, double longitude) {
         System.out.println("Selected Location: " + latitude + ", " + longitude);
     }
-
 }
