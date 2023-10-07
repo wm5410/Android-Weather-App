@@ -20,12 +20,17 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 
 public class MainActivity extends AppCompatActivity {
+    /*
+     * This creates everything on the main activity that is shown after the activity starts up.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Places.initialize(getApplicationContext(), "API key");
     }
+    /*
+     * This starts up the maps activity.
+     */
     public void onClickStart(View view){
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);

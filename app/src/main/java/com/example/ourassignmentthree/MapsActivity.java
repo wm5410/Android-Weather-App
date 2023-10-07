@@ -39,34 +39,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
-    protected double latitude;
-    protected double longitude;
     FusedLocationProviderClient fusedLocationProviderCLient;
     Location currentLocation;
+    /*
+     * This creates everything on the maps activity that is shown after the activity starts up.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         // Initialize Places API (need to add our key)
         Places.initialize(getApplicationContext(), "AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8");
-
+        //Gets the id for the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapsActivity.this);
+        //Check if permissions have been granted
         checkPermissionsGranted();
-
-        //Code for autocomplete fragment
+        //Gets the id of the autocomplete fragment
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
+        //Set a listener for when a location on the autocomplete fragment is clicked
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
                 // Handle the selected place
-                LatLng selectedLocation = place.getLatLng();
-                updateMapLocation(selectedLocation.latitude, selectedLocation.longitude);
+                moveCameraToPlace(place);
             }
-
             @Override
             public void onError(@NonNull Status status) {
                 // Handle the error
@@ -74,11 +73,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+    /*
+     * Display location on the map when map loads.
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         getLastKnownLocation();
     }
+    /*
+     * This will check if permissions were either granted or not.
+     */
     public void checkPermissionsGranted() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -89,6 +94,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             permissionGranted();
         }
     }
+    /*
+     * This will ask the user for location permissions.
+     */
     public void askForPermission() {
         ActivityResultLauncher<String[]> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
             boolean fineGranted = result.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false);
@@ -110,13 +118,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 android.Manifest.permission.ACCESS_FINE_LOCATION
         });
     }
+    /*
+     * Displays a toast when permission is granted and then calls the getLastKnownLocation.
+     */
     public void permissionGranted() {
         Toast.makeText(this, "LOCATION ACCESS GRANTED", Toast.LENGTH_SHORT).show();
         getLastKnownLocation();
     }
+    /*
+     * Displays toast when permission is not granted.
+     */
     public void permissionNotGranted() {
         Toast.makeText(this, "LOCATION ACCESS NOT GRANTED", Toast.LENGTH_SHORT).show();
     }
+    /*
+     * This will get the last known location of the device.
+     */
     public void getLastKnownLocation() {
         fusedLocationProviderCLient = (FusedLocationProviderClient) LocationServices.getFusedLocationProviderClient(this);
         //Ask for location
@@ -140,6 +157,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+    /*
+     * This will display the marker on the map and move the camera to it.
+     */
     public void showMarker(LatLng location, String markerTitle){
         //Set the marker to be the orange drawable
         BitmapDescriptor customMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_marker_orange);
@@ -148,9 +168,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Move the camera to where the current location is
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
     }
-
-    // Handle location updates or get last known location here
-    private void updateMapLocation(double latitude, double longitude) {
-        System.out.println("Selected Location: " + latitude + ", " + longitude);
+    /*
+     * This will move the camera and add the marker to the new location that was searched.
+     */
+    public void moveCameraToPlace(Place place){
+        if(place != null && mMap != null){
+            //Stores the searched location inside the in a variable
+            LatLng placeLatLng = place.getLatLng();
+            //Stores the name of the new location in a variable
+            String placeName = place.getName();
+            if(placeLatLng != null){
+                //Clear the marker on the old location
+                mMap.clear();
+                //Display the new location and move camera to it
+                showMarker(placeLatLng, placeName);
+            }
+        }
     }
 }
