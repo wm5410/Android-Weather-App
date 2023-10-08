@@ -34,11 +34,13 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    private final int FINE_PERMISSION_CODE = 1;
+    protected final int FINE_PERMISSION_CODE = 1;
     private GoogleMap mMap;
-    private ActivityMapsBinding binding;
+    protected ActivityMapsBinding binding;
     FusedLocationProviderClient fusedLocationProviderCLient;
     Location currentLocation;
     /*
@@ -49,15 +51,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Initialize Places API (need to add our key)
+        // Initialize Places API
         Places.initialize(getApplicationContext(), "AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8");
         //Gets the id for the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(MapsActivity.this);
         //Check if permissions have been granted
         checkPermissionsGranted();
         //Gets the id of the autocomplete fragment
-        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.autocomplete_fragment);
+        assert autocompleteFragment != null;
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
         //Set a listener for when a location on the autocomplete fragment is clicked
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -77,7 +82,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * Display location on the map when map loads.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         getLastKnownLocation();
     }
@@ -85,8 +90,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * This will check if permissions were either granted or not.
      */
     public void checkPermissionsGranted() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED || ContextCompat
+                .checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             //Permission not granted, ask for permission
             askForPermission();
         } else {
@@ -99,8 +106,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     public void askForPermission() {
         ActivityResultLauncher<String[]> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-            boolean fineGranted = result.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false);
-            boolean coarseGranted = result.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false);
+            boolean fineGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false));
+            boolean coarseGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false));
             //Assume fineGranted is never null
             if (fineGranted) {
                 //fine permission granted
@@ -166,7 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Add marker to the current location and name it "Current Location"
         mMap.addMarker(new MarkerOptions().position(location).icon(customMarker).title(markerTitle));
         //Move the camera to where the current location is
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
     }
     /*
      * This will move the camera and add the marker to the new location that was searched.
@@ -183,6 +190,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //Display the new location and move camera to it
                 showMarker(placeLatLng, placeName);
             }
+        }
+    }
+    /*
+     * Display nearby web cameras.
+     */
+    public void showCameraMarker(LatLng location, String cameraMarkerTitle){
+        //Set the marker
+        BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
+        //Add marker to the current location
+        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(cameraMarkerTitle));
+    }
+
+    public void showWeatherMarker(String weather, LatLng location, String weatherMarkerTitle){
+        if(Objects.equals(weather, "clear")){
+            //Set the marker
+            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clear);
+            //Add marker to the current location
+            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+        }
+        else if(Objects.equals(weather, "clouds")){
+            //Set the marker
+            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clouds);
+            //Add marker to the current location and name it "Current Location"
+            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+        }
+        else if(Objects.equals(weather, "drizzle")){
+            //Set the marker
+            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_drizzle);
+            //Add marker to the current location and name it "Current Location"
+            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+        }
+        else if(Objects.equals(weather, "rain")){
+            //Set the marker
+            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_rain);
+            //Add marker to the current location and name it "Current Location"
+            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+        }
+        else if(Objects.equals(weather, "snow")){
+            //Set the marker
+            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_snow);
+            //Add marker to the current location and name it "Current Location"
+            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+        }
+        else if(Objects.equals(weather, "thunderstorm")){
+            //Set the marker
+            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_thunderstorm);
+            //Add marker to the current location and name it "Current Location"
+            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
         }
     }
 }
