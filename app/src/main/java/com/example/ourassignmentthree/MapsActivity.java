@@ -173,7 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Add marker to the current location and name it "Current Location"
         mMap.addMarker(new MarkerOptions().position(location).icon(customMarker).title(markerTitle));
         //Move the camera to where the current location is
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
     }
     /*
      * This will move the camera and add the marker to the new location that was searched.
