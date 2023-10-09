@@ -105,7 +105,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * This will ask the user for location permissions.
      */
     public void askForPermission() {
-        ActivityResultLauncher<String[]> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+        ActivityResultLauncher<String[]> activityResultLauncher = registerForActivityResult(new ActivityResultContracts
+                .RequestMultiplePermissions(), result -> {
             boolean fineGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false));
             boolean coarseGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false));
             //Assume fineGranted is never null
@@ -144,8 +145,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void getLastKnownLocation() {
         fusedLocationProviderCLient = (FusedLocationProviderClient) LocationServices.getFusedLocationProviderClient(this);
         //Ask for location
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager
+                .PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    FINE_PERMISSION_CODE);
             return;
         }
         Task<Location> task = fusedLocationProviderCLient.getLastLocation();
