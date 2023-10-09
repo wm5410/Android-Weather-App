@@ -25,6 +25,7 @@
         android:layout_marginLeft="50dp"/>
 <!--    This displays information about the location such latitude and longitude.-->
     <TextView
+        android:id="@+id/tv_location_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Dummy text"
