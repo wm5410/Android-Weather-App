@@ -1,5 +1,18 @@
 package com.example.ourassignmentthree;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
+import android.os.AsyncTask;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -7,15 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import android.Manifest;
-import android.app.Fragment;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.ListView;
-import android.widget.Toast;
-
+import com.example.ourassignmentthree.databinding.ActivityMapsBinding;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -27,7 +32,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.example.ourassignmentthree.databinding.ActivityMapsBinding;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -35,9 +39,9 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 
+import org.json.JSONObject;
+
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     protected final int FINE_PERMISSION_CODE = 1;
@@ -45,6 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected ActivityMapsBinding binding;
     FusedLocationProviderClient fusedLocationProviderCLient;
     Location currentLocation;
+    String[] webCameras = new String[]{"Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"};
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
      */
@@ -55,14 +60,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(binding.getRoot());
         // Initialize Places API
         Places.initialize(getApplicationContext(), "AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8");
-
-
         //Gets the id for the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(MapsActivity.this);
-
-
         //Check if permissions have been granted
         checkPermissionsGranted();
         //Gets the id of the autocomplete fragment
@@ -76,6 +77,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(@NonNull Place place) {
                 // Handle the selected place
                 moveCameraToPlace(place);
+                //Access the listview
+                ListView cameraList = (ListView) findViewById(R.id.lv_camera_list);
+                //Custom adapter
+                CustomBaseAdapter customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
+                //Bind adapter to listview
+                cameraList.setAdapter(customBaseAdapter);
+                //On click listener
+                AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int index, long id) {
+                        //Start the web camera detail activity
+                        Intent intent = new Intent(view.getContext(), WebCameraDetailActivity.class);
+                        startActivity(intent);
+                    }
+                };
+                //Add onclick to the listview
+                cameraList.setOnItemClickListener(onItemClickListener);
             }
             @Override
             public void onError(@NonNull Status status) {
@@ -205,49 +223,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /*
      * Display nearby web cameras.
      */
-    public void showCameraMarker(LatLng location, String cameraMarkerTitle){
-        //Set the marker
-        BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
-        //Add marker to the current location
-        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(cameraMarkerTitle));
-    }
-
-    public void showWeatherMarker(String weather, LatLng location, String weatherMarkerTitle){
-        if(Objects.equals(weather, "clear")){
-            //Set the marker
-            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clear);
-            //Add marker to the current location
-            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-        }
-        else if(Objects.equals(weather, "clouds")){
-            //Set the marker
-            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clouds);
-            //Add marker to the current location and name it "Current Location"
-            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-        }
-        else if(Objects.equals(weather, "drizzle")){
-            //Set the marker
-            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_drizzle);
-            //Add marker to the current location and name it "Current Location"
-            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-        }
-        else if(Objects.equals(weather, "rain")){
-            //Set the marker
-            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_rain);
-            //Add marker to the current location and name it "Current Location"
-            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-        }
-        else if(Objects.equals(weather, "snow")){
-            //Set the marker
-            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_snow);
-            //Add marker to the current location and name it "Current Location"
-            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-        }
-        else if(Objects.equals(weather, "thunderstorm")){
-            //Set the marker
-            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_thunderstorm);
-            //Add marker to the current location and name it "Current Location"
-            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-        }
-    }
+//    public void showCameraMarker(LatLng location, String cameraMarkerTitle){
+//        //Set the marker
+//        BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
+//        //Add marker to the current location
+//        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(cameraMarkerTitle));
+//    }
+//
+//    public void showWeatherMarker(String weather, LatLng location, String weatherMarkerTitle){
+//        if(Objects.equals(weather, "clear")){
+//            //Set the marker
+//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clear);
+//            //Add marker to the current location
+//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+//        }
+//        else if(Objects.equals(weather, "clouds")){
+//            //Set the marker
+//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clouds);
+//            //Add marker to the current location and name it "Current Location"
+//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+//        }
+//        else if(Objects.equals(weather, "drizzle")){
+//            //Set the marker
+//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_drizzle);
+//            //Add marker to the current location and name it "Current Location"
+//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+//        }
+//        else if(Objects.equals(weather, "rain")){
+//            //Set the marker
+//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_rain);
+//            //Add marker to the current location and name it "Current Location"
+//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+//        }
+//        else if(Objects.equals(weather, "snow")){
+//            //Set the marker
+//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_snow);
+//            //Add marker to the current location and name it "Current Location"
+//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+//        }
+//        else if(Objects.equals(weather, "thunderstorm")){
+//            //Set the marker
+//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_thunderstorm);
+//            //Add marker to the current location and name it "Current Location"
+//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
+//        }
+//    }
 }

@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Map Marker</string>
-    <string name="google_maps_API_KEY">AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8</string>
     <string name="bt_start">Start</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="search">Search</string>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--This is the custom layout of the listview that displays the cameras.-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CustomListView">
+<!--    This is the camera icon.-->
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/img_mm_camera_teal"
+        android:layout_margin="10dp"
+        />
+<!--    This is the text in the row.-->
+    <TextView
+        android:id="@+id/tv_camera_name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        />
+</LinearLayout>
