@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.os.AsyncTask;
 
@@ -20,6 +21,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.ourassignmentthree.databinding.ActivityMapsBinding;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -41,6 +48,7 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -49,7 +57,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected ActivityMapsBinding binding;
     FusedLocationProviderClient fusedLocationProviderCLient;
     Location currentLocation;
-    String[] webCameras = new String[]{"Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"};
+    ArrayList<String> webCameras = new ArrayList<>(Arrays.asList("Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"));
+    RequestQueue queue;
+    String url = "https://api.windy.com/webcams";
+    CustomBaseAdapter customBaseAdapter;
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
      */
@@ -77,10 +88,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(@NonNull Place place) {
                 // Handle the selected place
                 moveCameraToPlace(place);
+                RequestQueue("9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
                 //Access the listview
                 ListView cameraList = (ListView) findViewById(R.id.lv_camera_list);
                 //Custom adapter
-                CustomBaseAdapter customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
+                customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
                 //Bind adapter to listview
                 cameraList.setAdapter(customBaseAdapter);
                 //On click listener
@@ -101,6 +113,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.i("LocationDebug", "An error occurred: " + status);
             }
         });
+    }
+    public void RequestQueue(String apiKey){
+        //Instantiate the RequestQueue
+        queue = Volley.newRequestQueue(this);
+
+        String urlWithApiKey = url + "?apiKey=" + apiKey;
+
+        // Request a string response from the provided URL
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlWithApiKey, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                // Handle the response here
+                if (webCameras.isEmpty()) {
+                    // If the list is empty, initialize it with the first response
+                    webCameras = new ArrayList<>();
+                    webCameras.add(response);
+                } else {
+                    // List is not empty, add the new response
+                    webCameras.add(response);
+                }
+                //Notify the adapter of the change
+                customBaseAdapter.notifyDataSetChanged();
+                //Get the id of the textview
+                TextView textView = (TextView) findViewById(R.id.tv_camera_name);
+                //Set the text
+                textView.setText(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Handle the error
+                Log.i("LocationDebug","An error occurred: " + error);
+            }
+        });
+        //Add the request to the queue
+        queue.add(stringRequest);
     }
     /*
      * Display location on the map when map loads.

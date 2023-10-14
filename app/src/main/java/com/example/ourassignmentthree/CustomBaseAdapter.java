@@ -7,18 +7,20 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class CustomBaseAdapter extends BaseAdapter {
     Context context;
-    String[] webCameraList;
+    ArrayList<String> webCameraList;
     LayoutInflater layoutInflater;
-    public CustomBaseAdapter(Context context, String[] webCameras){
+    public CustomBaseAdapter(Context context, ArrayList<String> webCameras){
         this.context = context;
         this.webCameraList = webCameras;
         layoutInflater = LayoutInflater.from(context);
     }
     @Override
     public int getCount() {
-        return webCameraList.length;
+        return webCameraList.size();
     }
     @Override
     public Object getItem(int i) {
@@ -35,7 +37,7 @@ public class CustomBaseAdapter extends BaseAdapter {
         //Create a textview variable and set it to the textview in the xml layout
         TextView textView = (TextView) convertView.findViewById(R.id.tv_camera_name);
         //Set to strings from the list
-        textView.setText(webCameraList[i]);
+        textView.setText(webCameraList.get(i));
         //Return the view
         return convertView;
     }
