@@ -59,7 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Location currentLocation;
     ArrayList<String> webCameras = new ArrayList<>(Arrays.asList("Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"));
     RequestQueue queue;
-    String url = "https://api.windy.com/webcams";
+    String url = "https://api.windy.com/webcams/v1";
     CustomBaseAdapter customBaseAdapter;
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
@@ -88,7 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(@NonNull Place place) {
                 // Handle the selected place
                 moveCameraToPlace(place);
-                RequestQueue("9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
+                RequestQueue("9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v", place);
                 //Access the listview
                 ListView cameraList = (ListView) findViewById(R.id.lv_camera_list);
                 //Custom adapter
@@ -114,11 +114,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
-    public void RequestQueue(String apiKey){
+    public void RequestQueue(String apiKey, Place place){
         //Instantiate the RequestQueue
         queue = Volley.newRequestQueue(this);
 
-        String urlWithApiKey = url + "?apiKey=" + apiKey;
+        String urlWithApiKey = url + "?apiKey=" + apiKey + "&location=" + place;
 
         // Request a string response from the provided URL
         StringRequest stringRequest = new StringRequest(Request.Method.GET, urlWithApiKey, new Response.Listener<String>() {
