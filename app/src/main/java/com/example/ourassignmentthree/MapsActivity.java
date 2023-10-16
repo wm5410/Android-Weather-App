@@ -46,8 +46,15 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -114,14 +121,152 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
-    public void RequestQueue(String apiKey, Place place){
+
+    private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
+        TextView responseTextView;
+        @Override
+        protected String doInBackground(Void... voids) {
+            responseTextView = findViewById(R.id.test);
+            try {
+                String apiKey1 = "2d6d25ab6612f49333551ae60271d591";
+                String city = "Hamilton";
+                String country = "nz";
+
+                String apiUrl = "https://pro.openweathermap.org/data/2.5/weather?q=" + city + "," + country + "&APPID=" + apiKey1;
+                URL url = new URL(apiUrl);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+                // Make a GET request
+                urlConnection.setRequestMethod("GET");
+
+                // Read the response
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                // Disconnect after reading the response
+                urlConnection.disconnect();
+
+                return response.toString();
+            } catch (Exception e) {
+                return "Error: " + e.getMessage();
+            }
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            processWeatherData(result);
+        }
+
+        private void processWeatherData(String result) {
+            try {
+                // Convert the response string to a JSON object
+                JSONObject jsonResponse = new JSONObject(result);
+
+                // Extract information from the JSON object
+                String cityName = jsonResponse.getString("name");
+                JSONObject mainObject = jsonResponse.getJSONObject("main");
+                double temperature = mainObject.getDouble("temp");
+                JSONArray weatherArray = jsonResponse.getJSONArray("weather");
+                String weatherMain = "";
+                if (weatherArray.length() > 0) {
+                    JSONObject weatherObject = weatherArray.getJSONObject(0);
+                    weatherMain = weatherObject.getString("main");
+                }
+
+                // Display the information in the TextView
+                String displayText = "City: " + cityName + "\nTemperature: " + temperature + " K \n" + weatherMain;
+                responseTextView.setText(displayText);
+
+                //Process the information - display images based on responses
+
+            } catch (Exception e) {
+                responseTextView.setText("Error processing JSON: " + e.getMessage());
+            }
+        }
+    }
+
+
+    private class FetchCameraTask extends AsyncTask<Void, Void, String> {
+        TextView responseTextView;
+        @Override
+        protected String doInBackground(Void... voids) {
+            responseTextView = findViewById(R.id.test2);
+            try {
+                String apiUrl = "https://staging.windy.com/webcams/api/v3/countries?lang=en";
+
+                // Create a URL object
+                URL url = new URL(apiUrl);
+
+                // Open a connection
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                // Set the request method to GET
+                connection.setRequestMethod("GET");
+
+                // Set request headers
+                connection.setRequestProperty("accept", "application/json");
+                connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
+
+                // Get the response code
+                int responseCode = connection.getResponseCode();
+
+                // Read the response
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                // Close the connection
+                connection.disconnect();
+
+                // Return the response as a string
+                return response.toString();
+
+            } catch (Exception e) {
+                return "Error: " + e.getMessage();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // Handle the result
+            //Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+            responseTextView.setText(result);
+        }
+    }
+
+
+    public void RequestQueue(String apiKey, Place place) {
+
+        //////////////////////////////////  will code //////////////
+        //Go to method that will execute and process the openweathermap api
+        new FetchWeatherTask().execute();
+
+        //To get weather data use https://pro.openweathermap.org/data/2.5/weather?q=Hamilton,nz&APPID=2d6d25ab6612f49333551ae60271d591
+        //Can try https://history.openweathermap.org/data/2.5/history/city?id=2885679&type=hour&appid=2d6d25ab6612f49333551ae60271d591 However this is not the right one
+
+        new FetchCameraTask().execute();
+
+        /////////////////////////////// justin code ////
+
+
+
         //Instantiate the RequestQueue
         queue = Volley.newRequestQueue(this);
 
         String urlWithApiKey = url + "?apiKey=" + apiKey + "&location=" + place;
-
         // Request a string response from the provided URL
         StringRequest stringRequest = new StringRequest(Request.Method.GET, urlWithApiKey, new Response.Listener<String>() {
+            //This method is not executing
             @Override
             public void onResponse(String response) {
                 // Handle the response here
@@ -140,6 +285,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //Set the text
                 textView.setText(response);
             }
+
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
