@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -45,13 +46,17 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -218,18 +223,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Read the response
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String inputLine;
-                StringBuilder response = new StringBuilder();
+                StringBuffer response = new StringBuffer();
 
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
                 }
                 in.close();
 
+
                 // Close the connection
                 connection.disconnect();
 
+                String resultString = new String(response);
+
+                //////////////////////////////////////// GETTING ERRORS BEACUSE OF .ToString()
                 // Return the response as a string
-                return response.toString();
+                return resultString;
 
             } catch (Exception e) {
                 return "Error: " + e.getMessage();
@@ -251,12 +260,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Create a JSONArray from the JSON String
                 //JSONArray jsonArray = new JSONArray(result);
 
+                //char[] arr = new char[result.length()];
 
+                String[] jsonObjects = result.substring(1, result.length() - 1).split("\\},\\{");
+
+                //JSONObject json = new JSONObject(jsonObjects[0]);
+
+                //String title = json.getString("title");
 
                 // Count the number of responses
                // int responseCount = jsonArray.length();
-
-                //responseTextView.setText(result.length());
+                JSONArray jsonArray = new JSONArray();
+                int o = 0;
+                for (String s:jsonObjects) {
+                    o++;
+                }
+                String s = Integer.toString(o);
+                responseTextView.setText(s);
 
                 // Check if the "result" key exists
 //                if (jsonResponse.has("")) {
