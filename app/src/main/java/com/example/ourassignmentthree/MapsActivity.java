@@ -197,7 +197,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected String doInBackground(Void... voids) {
             responseTextView = findViewById(R.id.test2);
             try {
-                String apiUrl = "https://staging.windy.com/webcams/api/v3/countries?lang=en";
+                String apiUrl = "https://api.windy.com/webcams/api/v3/map/clusters?lang=en&northLat=51.6918741&southLat=51.2867602&eastLon=0.3340155&westLon=-0.5103751&zoom=8&include=images";
 
                 // Create a URL object
                 URL url = new URL(apiUrl);
@@ -239,8 +239,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(String result) {
             // Handle the result
-            //Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-            responseTextView.setText(result);
+            //responseTextView.setText(result);
+            processWebcamData(result);
+        }
+
+        private void processWebcamData(String result) {
+            try {
+                // Convert the response string to a JSON object
+                //JSONObject jsonResponse = new JSONObject(result);
+
+                // Create a JSONArray from the JSON String
+                //JSONArray jsonArray = new JSONArray(result);
+
+
+
+                // Count the number of responses
+               // int responseCount = jsonArray.length();
+
+                //responseTextView.setText(result.length());
+
+                // Check if the "result" key exists
+//                if (jsonResponse.has("")) {
+//                    JSONArray clustersArray = jsonResponse.getJSONArray("result");
+//                  String displayText = result;
+//                 responseTextView.setText(displayText);
+
+//                    // Check if the clustersArray is not empty
+//                    if (clustersArray.length() > 0) {
+//                        JSONObject clusterObject = clustersArray.getJSONObject(0);
+//
+//                        // Check if the "webcams" key exists in the clusterObject
+//                        if (clusterObject.has("webcams")) {
+//                            JSONArray webcamsArray = clusterObject.getJSONArray("webcams");
+//
+//                            // Check if the webcamsArray is not empty
+//                            if (webcamsArray.length() > 0) {
+//                                JSONObject webcamObject = webcamsArray.getJSONObject(0);
+//
+//                                // Extract title and webcamId
+//                                String title = webcamObject.getString("title");
+//                                String webcamId = webcamObject.getString("webcamid");
+//
+//                                // Display the information in the TextView
+//                                String displayText = "Title: " + title + "\nWebcamId: " + webcamId;
+//                                responseTextView.setText(displayText);
+//                            } else {
+//                                responseTextView.setText("No webcams found in the response.");
+//                            }
+//                        } else {
+//                            responseTextView.setText("Missing 'webcams' key in the response.");
+//                        }
+//                    } else {
+//                        responseTextView.setText("No clusters found in the response.");
+//                    }
+//                } else {
+//                    responseTextView.setText("Missing 'result' key in the response.");
+//                }
+
+            } catch (Exception e) {
+                // Print or log detailed error message
+                e.printStackTrace();
+                responseTextView.setText("Error processing JSON: " + e.getMessage());
+            }
         }
     }
 
