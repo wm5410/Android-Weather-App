@@ -129,15 +129,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
         TextView responseTextView;
+        private double latitude;
+        private double longitude;
+
+        public FetchWeatherTask(double latitude, double longitude) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
         @Override
         protected String doInBackground(Void... voids) {
             responseTextView = findViewById(R.id.test);
             try {
                 String apiKey1 = "2d6d25ab6612f49333551ae60271d591";
-                String city = "Hamilton";
-                String country = "nz";
 
-                String apiUrl = "https://pro.openweathermap.org/data/2.5/weather?q=" + city + "," + country + "&APPID=" + apiKey1;
+                String apiUrl = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&appid=" + apiKey1;
                 URL url = new URL(apiUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
@@ -198,11 +203,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private class FetchCameraTask extends AsyncTask<Void, Void, String> {
         TextView responseTextView;
+        ListView responseListView;
+        private double latitude;
+        private double longitude;
+
+        public FetchCameraTask(double latitude, double longitude) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
         @Override
         protected String doInBackground(Void... voids) {
             responseTextView = findViewById(R.id.test2);
+            responseListView = findViewById(R.id.lv_camera_list);
             try {
-                String apiUrl = "https://api.windy.com/webcams/api/v3/map/clusters?lang=en&northLat=51.6918741&southLat=51.2867602&eastLon=0.3340155&westLon=-0.5103751&zoom=8&include=images";
+                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&continents=OC&categories=traffic";
 
                 // Create a URL object
                 URL url = new URL(apiUrl);
@@ -234,11 +248,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Close the connection
                 connection.disconnect();
 
-                String resultString = new String(response);
-
-                //////////////////////////////////////// GETTING ERRORS BEACUSE OF .ToString()
                 // Return the response as a string
-                return resultString;
+                return response.toString();
 
             } catch (Exception e) {
                 return "Error: " + e.getMessage();
@@ -254,67 +265,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         private void processWebcamData(String result) {
             try {
-                // Convert the response string to a JSON object
-                //JSONObject jsonResponse = new JSONObject(result);
+                JSONObject jsonObject = new JSONObject(result);
+                JSONArray webcams = jsonObject.getJSONArray("webcams");
+                ArrayList<String> titles = new ArrayList<>();
 
-                // Create a JSONArray from the JSON String
-                //JSONArray jsonArray = new JSONArray(result);
+                StringBuilder resultText = new StringBuilder();
 
-                //char[] arr = new char[result.length()];
+                for (int i = 0; i < webcams.length(); i++) {
+                    JSONObject webcam = webcams.getJSONObject(i);
+                    String title = webcam.getString("title");
+                    int viewCount = webcam.getInt("viewCount");
+                    long webcamId = webcam.getLong("webcamId");
+                    String status = webcam.getString("status");
+                    String lastUpdatedOn = webcam.getString("lastUpdatedOn");
 
-                String[] jsonObjects = result.substring(1, result.length() - 1).split("\\},\\{");
+                    // Append properties to the resultText
+                    resultText.append("Webcam ").append(i + 1).append(" Properties:\n");
+                    resultText.append("Title: ").append(title).append("\n");
+                    resultText.append("Webcam ID: ").append(webcamId).append("\n");
 
-                //JSONObject json = new JSONObject(jsonObjects[0]);
-
-                //String title = json.getString("title");
-
-                // Count the number of responses
-               // int responseCount = jsonArray.length();
-                JSONArray jsonArray = new JSONArray();
-                int o = 0;
-                for (String s:jsonObjects) {
-                    o++;
+                    titles.add(title);
                 }
-                String s = Integer.toString(o);
-                responseTextView.setText(s);
 
-                // Check if the "result" key exists
-//                if (jsonResponse.has("")) {
-//                    JSONArray clustersArray = jsonResponse.getJSONArray("result");
-//                  String displayText = result;
-//                 responseTextView.setText(displayText);
+                // Set the formatted text to the TextView
+                responseTextView.setText(resultText.toString());
+                //responseTextView.setText(latitude + " " + longitude);
 
-//                    // Check if the clustersArray is not empty
-//                    if (clustersArray.length() > 0) {
-//                        JSONObject clusterObject = clustersArray.getJSONObject(0);
-//
-//                        // Check if the "webcams" key exists in the clusterObject
-//                        if (clusterObject.has("webcams")) {
-//                            JSONArray webcamsArray = clusterObject.getJSONArray("webcams");
-//
-//                            // Check if the webcamsArray is not empty
-//                            if (webcamsArray.length() > 0) {
-//                                JSONObject webcamObject = webcamsArray.getJSONObject(0);
-//
-//                                // Extract title and webcamId
-//                                String title = webcamObject.getString("title");
-//                                String webcamId = webcamObject.getString("webcamid");
-//
-//                                // Display the information in the TextView
-//                                String displayText = "Title: " + title + "\nWebcamId: " + webcamId;
-//                                responseTextView.setText(displayText);
-//                            } else {
-//                                responseTextView.setText("No webcams found in the response.");
-//                            }
-//                        } else {
-//                            responseTextView.setText("Missing 'webcams' key in the response.");
-//                        }
-//                    } else {
-//                        responseTextView.setText("No clusters found in the response.");
-//                    }
-//                } else {
-//                    responseTextView.setText("Missing 'result' key in the response.");
-//                }
+                // Create an ArrayAdapter and get it to display each title in the listview
+                //
+                //
+
 
             } catch (Exception e) {
                 // Print or log detailed error message
@@ -329,12 +309,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //////////////////////////////////  will code //////////////
         //Go to method that will execute and process the openweathermap api
-        new FetchWeatherTask().execute();
 
-        //To get weather data use https://pro.openweathermap.org/data/2.5/weather?q=Hamilton,nz&APPID=2d6d25ab6612f49333551ae60271d591
-        //Can try https://history.openweathermap.org/data/2.5/history/city?id=2885679&type=hour&appid=2d6d25ab6612f49333551ae60271d591 However this is not the right one
+        Place p = place;
 
-        new FetchCameraTask().execute();
+        LatLng latLng = place.getLatLng();
+
+        double latitude = latLng.latitude;
+        double longitude = latLng.longitude;
+
+        new FetchWeatherTask(latitude, longitude).execute();
+
+        new FetchCameraTask(latitude, longitude).execute();
 
         /////////////////////////////// justin code ////
 
