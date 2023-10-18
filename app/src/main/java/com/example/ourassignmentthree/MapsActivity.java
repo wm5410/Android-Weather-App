@@ -230,7 +230,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Add marker to the current location and name it "Current Location"
         mMap.addMarker(new MarkerOptions().position(location).icon(customMarker).title(markerTitle));
         //Move the camera to where the current location is
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
     }
     /*
      * This will move the camera and add the marker to the new location that was searched.
@@ -306,12 +306,72 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String cityName = jsonResponse.getString("name");
                 JSONObject mainObject = jsonResponse.getJSONObject("main");
                 double temperature = mainObject.getDouble("temp");
+                JSONObject coordObject = jsonResponse.getJSONObject("coord");
+                double longitude = coordObject.getDouble("lon");
+                double latitude = coordObject.getDouble("lat");
+                Log.d("Code Debug", "Latitude: " + latitude + ", Longitude: " + longitude);
                 JSONArray weatherArray = jsonResponse.getJSONArray("weather");
                 String weatherMain = "";
                 //If the array is NOT empty
                 if (weatherArray.length() > 0) {
                     JSONObject weatherObject = weatherArray.getJSONObject(0);
                     weatherMain = weatherObject.getString("main");
+                }
+                //Check weather conditions and add custom markers
+                if(weatherMain.equalsIgnoreCase("Rain")){
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_rain);
+                    //Add marker to the location
+                    if(mMap != null){
+                        LatLng location = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                    }
+                }
+                else if(weatherMain.equalsIgnoreCase("Clouds")){
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clouds);
+                    //Add marker to the location
+                    if(mMap != null){
+                        LatLng location = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+                    }
+                }
+                else if(weatherMain.equalsIgnoreCase("Clear")){
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clear);
+                    //Add marker to the location
+                    if(mMap != null){
+                        LatLng location = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                    }
+                }
+                else if(weatherMain.equalsIgnoreCase("drizzle")){
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_drizzle);
+                    //Add marker to the location
+                    if(mMap != null){
+                        LatLng location = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                    }
+                }
+                else if(weatherMain.equalsIgnoreCase("snow")){
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_snow);
+                    //Add marker to the location
+                    if(mMap != null){
+                        LatLng location = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                    }
+                }
+                else if(weatherMain.equalsIgnoreCase("Thunderstorm")){
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_thunderstorm);
+                    //Add marker to the location
+                    if(mMap != null){
+                        LatLng location = new LatLng(latitude, longitude);
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                    }
                 }
                 // Display the information in the TextView
                 String displayText = "City: " + cityName + "\nTemperature: " + temperature + " K \n" + weatherMain;
@@ -375,7 +435,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(String result) {
             // Handle the result
-            //responseTextView.setText(result);
             processWebcamData(result);
         }
         /*
@@ -401,43 +460,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     }
-
-//    public void showWeatherMarker(String weather, LatLng location, String weatherMarkerTitle){
-//        if(Objects.equals(weather, "clear")){
-//            //Set the marker
-//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clear);
-//            //Add marker to the current location
-//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-//        }
-//        else if(Objects.equals(weather, "clouds")){
-//            //Set the marker
-//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_clouds);
-//            //Add marker to the current location and name it "Current Location"
-//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-//        }
-//        else if(Objects.equals(weather, "drizzle")){
-//            //Set the marker
-//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_drizzle);
-//            //Add marker to the current location and name it "Current Location"
-//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-//        }
-//        else if(Objects.equals(weather, "rain")){
-//            //Set the marker
-//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_rain);
-//            //Add marker to the current location and name it "Current Location"
-//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-//        }
-//        else if(Objects.equals(weather, "snow")){
-//            //Set the marker
-//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_snow);
-//            //Add marker to the current location and name it "Current Location"
-//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-//        }
-//        else if(Objects.equals(weather, "thunderstorm")){
-//            //Set the marker
-//            BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_weather_thunderstorm);
-//            //Add marker to the current location and name it "Current Location"
-//            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(weatherMarkerTitle));
-//        }
-//    }
 }
