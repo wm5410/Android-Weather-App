@@ -97,11 +97,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
+                LatLng latLng = place.getLatLng();
+
+                double latitude = latLng.latitude;
+                double longitude = latLng.longitude;
+
                 // Handle the selected place
                 moveCameraToPlace(place);
                 //Call the methods to get weather info and camera info
-                new FetchWeatherTask().execute();
-                new FetchCameraTask().execute();
+                new FetchWeatherTask(latitude, longitude).execute();
+                new FetchCameraTask(latitude, longitude).execute();
                 //Access the listview
                 ListView cameraList = (ListView) findViewById(R.id.lv_camera_list);
                 //Custom adapter
@@ -255,6 +260,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
         //Declare variable
         TextView responseTextView;
+        private double latitude;
+        private double longitude;
+
+        public FetchWeatherTask(double latitude, double longitude) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
+
         /*
          * This method will use the api key and make requests returning a response.
          */
@@ -264,9 +277,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             try {
                 //Create and set variables
                 String apiKey1 = "2d6d25ab6612f49333551ae60271d591";
-                String city = "Hamilton";
-                String country = "nz";
-                String apiUrl = "https://pro.openweathermap.org/data/2.5/weather?q=" + city + "," + country + "&APPID=" + apiKey1;
+
+                String apiUrl = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&appid=" + apiKey1;
+
                 URL url = new URL(apiUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 // Make a GET request
@@ -389,15 +402,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private class FetchCameraTask extends AsyncTask<Void, Void, String> {
         //Declare variable
         TextView responseTextView;
+        ListView responseListView;
+        private double latitude;
+        private double longitude;
+
+        public FetchCameraTask(double latitude, double longitude) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
+
         /*
          * This method will use the api key and make requests returning a response.
          */
         @Override
         protected String doInBackground(Void... voids) {
             responseTextView = findViewById(R.id.test2);
+            responseListView = findViewById(R.id.lv_camera_list);
             try {
                 //Set url
-                String apiUrl = "https://api.windy.com/webcams/api/v3/map/clusters?lang=en&northLat=51.6918741&southLat=51.2867602&eastLon=0.3340155&westLon=-0.5103751&zoom=8&include=images";
+                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&continents=OC&categories=traffic";
+
                 // Create a URL object
                 URL url = new URL(apiUrl);
                 // Open a connection
@@ -420,10 +444,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 in.close();
                 // Close the connection
                 connection.disconnect();
-                String resultString = new String(response);
-                //////////////////////////////////////// GETTING ERRORS BEACUSE OF .ToString()
+
                 // Return the response as a string
-                return resultString;
+                return response.toString();
             } catch (Exception e) {
                 //Display error message
                 return "Error: " + e.getMessage();
@@ -442,17 +465,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         private void processWebcamData(String result) {
             try {
-                //Set a new string array
-                String[] jsonObjects = result.substring(1, result.length() - 1).split("\\},\\{");
-                //Set int variable
-                int o = 0;
-                //Loop through each item in the array
-                for (String s:jsonObjects) {
-                    o++;
+
+                //
+                //USE CUSTOM BASE ADAPTER ON THIS
+                //
+                JSONArray jsonArray = new JSONArray();
+                JSONObject jsonObject = new JSONObject(result);
+                JSONArray webcams = jsonObject.getJSONArray("webcams");
+                ArrayList<String> titles = new ArrayList<>();
+                String[] titles1 = new String[webcams.length()];
+
+                StringBuilder resultText = new StringBuilder();
+
+                for (int i = 0; i < webcams.length(); i++) {
+                    JSONObject webcam = webcams.getJSONObject(i);
+                    String title = webcam.getString("title");
+                    int viewCount = webcam.getInt("viewCount");
+                    long webcamId = webcam.getLong("webcamId");
+                    String status = webcam.getString("status");
+                    String lastUpdatedOn = webcam.getString("lastUpdatedOn");
+
+                    // Append properties to the resultText
+                    //For testing
+                    resultText.append("Webcam ").append(i + 1).append(" Properties:\n");
+                    resultText.append("Title: ").append(title).append("\n");
+                    resultText.append("Webcam ID: ").append(webcamId).append("\n");
+                    //
+
+                    titles.add(title);
                 }
-                //Set a string variable
-                String s = Integer.toString(o);
-                responseTextView.setText(s);
+
+                CustomBaseAdapter adapter = new CustomBaseAdapter(getApplicationContext(), titles1);
+                responseListView.setAdapter(adapter);
+
+                StringBuilder cameraInfoBuilder = new StringBuilder();
+                for (String camera : webCameras) {
+                    cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
+                }
+                //responseTextView.setText(cameraInfoBuilder.append(webCameras));
+
+
+                responseTextView.setText(resultText.toString());
+
             } catch (Exception e) {
                 // Print or log detailed error message
                 e.printStackTrace();
