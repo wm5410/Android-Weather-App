@@ -9,27 +9,44 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+/*
+ * This is the custom adapter which sets the layout for each row in the camera listview.
+ */
 public class CustomBaseAdapter extends BaseAdapter {
+    //Declare variables
     Context context;
-    ArrayList<String> webCameraList;
+    String[] webCameraList;
     LayoutInflater layoutInflater;
-    public CustomBaseAdapter(Context context, ArrayList<String> webCameras){
+    /*
+     * This is the constructor.
+     */
+    public CustomBaseAdapter(Context context, String[] webCameras){
         this.context = context;
         this.webCameraList = webCameras;
         layoutInflater = LayoutInflater.from(context);
     }
+    /*
+     * This counts the items in the list.
+     */
     @Override
     public int getCount() {
-        return webCameraList.size();
+        return webCameraList.length;
     }
+    /*
+     * This returns the object.
+     */
     @Override
     public Object getItem(int i) {
         return null;
     }
+    /*
+     * This gets the item id.
+     */
     @Override
     public long getItemId(int i) {
         return 0;
     }
+    //This gets and sets the view.
     @Override
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         //Set the view
@@ -37,7 +54,7 @@ public class CustomBaseAdapter extends BaseAdapter {
         //Create a textview variable and set it to the textview in the xml layout
         TextView textView = (TextView) convertView.findViewById(R.id.tv_camera_name);
         //Set to strings from the list
-        textView.setText(webCameraList.get(i));
+        textView.setText(webCameraList[i]);
         //Return the view
         return convertView;
     }

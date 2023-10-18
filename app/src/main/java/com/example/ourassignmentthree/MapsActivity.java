@@ -64,14 +64,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    //Declare variables
     protected final int FINE_PERMISSION_CODE = 1;
     private GoogleMap mMap;
     protected ActivityMapsBinding binding;
     FusedLocationProviderClient fusedLocationProviderCLient;
     Location currentLocation;
-    ArrayList<String> webCameras = new ArrayList<>(Arrays.asList("Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"));
-    RequestQueue queue;
-    String url = "https://api.windy.com/webcams/v1";
+    String[] webCameras = new String[]{"Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"};
     CustomBaseAdapter customBaseAdapter;
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
@@ -100,7 +99,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(@NonNull Place place) {
                 // Handle the selected place
                 moveCameraToPlace(place);
-                RequestQueue("9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v", place);
+                //Call the methods to get weather info and camera info
+                new FetchWeatherTask().execute();
+                new FetchCameraTask().execute();
                 //Access the listview
                 ListView cameraList = (ListView) findViewById(R.id.lv_camera_list);
                 //Custom adapter
@@ -125,241 +126,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.i("LocationDebug", "An error occurred: " + status);
             }
         });
-    }
-
-    private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
-        TextView responseTextView;
-        private double latitude;
-        private double longitude;
-
-        public FetchWeatherTask(double latitude, double longitude) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-        @Override
-        protected String doInBackground(Void... voids) {
-            responseTextView = findViewById(R.id.test);
-            try {
-                String apiKey1 = "2d6d25ab6612f49333551ae60271d591";
-
-                String apiUrl = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&appid=" + apiKey1;
-                URL url = new URL(apiUrl);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-                // Make a GET request
-                urlConnection.setRequestMethod("GET");
-
-                // Read the response
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                // Disconnect after reading the response
-                urlConnection.disconnect();
-
-                return response.toString();
-            } catch (Exception e) {
-                return "Error: " + e.getMessage();
-            }
-        }
-        @Override
-        protected void onPostExecute(String result) {
-            processWeatherData(result);
-        }
-
-        private void processWeatherData(String result) {
-            try {
-                // Convert the response string to a JSON object
-                JSONObject jsonResponse = new JSONObject(result);
-
-                // Extract information from the JSON object
-                String cityName = jsonResponse.getString("name");
-                JSONObject mainObject = jsonResponse.getJSONObject("main");
-                double temperature = mainObject.getDouble("temp");
-                JSONArray weatherArray = jsonResponse.getJSONArray("weather");
-                String weatherMain = "";
-                if (weatherArray.length() > 0) {
-                    JSONObject weatherObject = weatherArray.getJSONObject(0);
-                    weatherMain = weatherObject.getString("main");
-                }
-
-                // Display the information in the TextView
-                String displayText = "City: " + cityName + "\nTemperature: " + temperature + " K \n" + weatherMain;
-                responseTextView.setText(displayText);
-
-                //Process the information - display images based on responses
-
-            } catch (Exception e) {
-                responseTextView.setText("Error processing JSON: " + e.getMessage());
-            }
-        }
-    }
-
-
-    private class FetchCameraTask extends AsyncTask<Void, Void, String> {
-        TextView responseTextView;
-        ListView responseListView;
-        private double latitude;
-        private double longitude;
-
-        public FetchCameraTask(double latitude, double longitude) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-        @Override
-        protected String doInBackground(Void... voids) {
-            responseTextView = findViewById(R.id.test2);
-            responseListView = findViewById(R.id.lv_camera_list);
-            try {
-                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&continents=OC&categories=traffic";
-
-                // Create a URL object
-                URL url = new URL(apiUrl);
-
-                // Open a connection
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-                // Set the request method to GET
-                connection.setRequestMethod("GET");
-
-                // Set request headers
-                connection.setRequestProperty("accept", "application/json");
-                connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
-
-                // Get the response code
-                int responseCode = connection.getResponseCode();
-
-                // Read the response
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-
-                // Close the connection
-                connection.disconnect();
-
-                // Return the response as a string
-                return response.toString();
-
-            } catch (Exception e) {
-                return "Error: " + e.getMessage();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            // Handle the result
-            //responseTextView.setText(result);
-            processWebcamData(result);
-        }
-
-        private void processWebcamData(String result) {
-            try {
-                JSONObject jsonObject = new JSONObject(result);
-                JSONArray webcams = jsonObject.getJSONArray("webcams");
-                ArrayList<String> titles = new ArrayList<>();
-
-                StringBuilder resultText = new StringBuilder();
-
-                for (int i = 0; i < webcams.length(); i++) {
-                    JSONObject webcam = webcams.getJSONObject(i);
-                    String title = webcam.getString("title");
-                    int viewCount = webcam.getInt("viewCount");
-                    long webcamId = webcam.getLong("webcamId");
-                    String status = webcam.getString("status");
-                    String lastUpdatedOn = webcam.getString("lastUpdatedOn");
-
-                    // Append properties to the resultText
-                    resultText.append("Webcam ").append(i + 1).append(" Properties:\n");
-                    resultText.append("Title: ").append(title).append("\n");
-                    resultText.append("Webcam ID: ").append(webcamId).append("\n");
-
-                    titles.add(title);
-                }
-
-                // Set the formatted text to the TextView
-                responseTextView.setText(resultText.toString());
-                //responseTextView.setText(latitude + " " + longitude);
-
-                // Create an ArrayAdapter and get it to display each title in the listview
-                //
-                //
-
-
-            } catch (Exception e) {
-                // Print or log detailed error message
-                e.printStackTrace();
-                responseTextView.setText("Error processing JSON: " + e.getMessage());
-            }
-        }
-    }
-
-
-    public void RequestQueue(String apiKey, Place place) {
-
-        //////////////////////////////////  will code //////////////
-        //Go to method that will execute and process the openweathermap api
-
-        Place p = place;
-
-        LatLng latLng = place.getLatLng();
-
-        double latitude = latLng.latitude;
-        double longitude = latLng.longitude;
-
-        new FetchWeatherTask(latitude, longitude).execute();
-
-        new FetchCameraTask(latitude, longitude).execute();
-
-        /////////////////////////////// justin code ////
-
-
-
-        //Instantiate the RequestQueue
-        queue = Volley.newRequestQueue(this);
-
-        String urlWithApiKey = url + "?apiKey=" + apiKey + "&location=" + place;
-        // Request a string response from the provided URL
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlWithApiKey, new Response.Listener<String>() {
-            //This method is not executing
-            @Override
-            public void onResponse(String response) {
-                // Handle the response here
-                if (webCameras.isEmpty()) {
-                    // If the list is empty, initialize it with the first response
-                    webCameras = new ArrayList<>();
-                    webCameras.add(response);
-                } else {
-                    // List is not empty, add the new response
-                    webCameras.add(response);
-                }
-                //Notify the adapter of the change
-                customBaseAdapter.notifyDataSetChanged();
-                //Get the id of the textview
-                TextView textView = (TextView) findViewById(R.id.tv_camera_name);
-                //Set the text
-                textView.setText(response);
-            }
-
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //Handle the error
-                Log.i("LocationDebug","An error occurred: " + error);
-            }
-        });
-        //Add the request to the queue
-        queue.add(stringRequest);
     }
     /*
      * Display location on the map when map loads.
@@ -426,6 +192,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * This will get the last known location of the device.
      */
     public void getLastKnownLocation() {
+        //Set the fusedLocationProviderClient
         fusedLocationProviderCLient = (FusedLocationProviderClient) LocationServices.getFusedLocationProviderClient(this);
         //Ask for location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager
@@ -439,13 +206,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                if(location != null){
+                if (location != null) {
+                    //Set currentLocation to location
                     currentLocation = location;
+                    //Test - Display a line in the output with the latitude and longitude
                     Log.d("LocationDebug", "Latitude: " + currentLocation.getLatitude() + ", Longitude: " + currentLocation.getLongitude());
+                    //Create a new LatLng variable and show the marker
                     LatLng newLat = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                     showMarker(newLat, "Current location");
-                }
-                else{
+                } else {
+                    //Display error in the output
                     Log.e("LocationDebug", "Location is null");
                 }
             }
@@ -454,7 +224,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /*
      * This will display the marker on the map and move the camera to it.
      */
-    public void showMarker(LatLng location, String markerTitle){
+    public void showMarker(LatLng location, String markerTitle) {
         //Set the marker to be the orange drawable
         BitmapDescriptor customMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_marker_orange);
         //Add marker to the current location and name it "Current Location"
@@ -465,13 +235,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /*
      * This will move the camera and add the marker to the new location that was searched.
      */
-    public void moveCameraToPlace(Place place){
-        if(place != null && mMap != null){
+    public void moveCameraToPlace(Place place) {
+        if (place != null && mMap != null) {
             //Stores the searched location inside the in a variable
             LatLng placeLatLng = place.getLatLng();
             //Stores the name of the new location in a variable
             String placeName = place.getName();
-            if(placeLatLng != null){
+            if (placeLatLng != null) {
                 //Clear the marker on the old location
                 mMap.clear();
                 //Display the new location and move camera to it
@@ -480,15 +250,158 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
     /*
-     * Display nearby web cameras.
+     * This is a class that gets the weather information
      */
-//    public void showCameraMarker(LatLng location, String cameraMarkerTitle){
-//        //Set the marker
-//        BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
-//        //Add marker to the current location
-//        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title(cameraMarkerTitle));
-//    }
-//
+    private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
+        //Declare variable
+        TextView responseTextView;
+        /*
+         * This method will use the api key and make requests returning a response.
+         */
+        @Override
+        protected String doInBackground(Void... voids) {
+            responseTextView = findViewById(R.id.test);
+            try {
+                //Create and set variables
+                String apiKey1 = "2d6d25ab6612f49333551ae60271d591";
+                String city = "Hamilton";
+                String country = "nz";
+                String apiUrl = "https://pro.openweathermap.org/data/2.5/weather?q=" + city + "," + country + "&APPID=" + apiKey1;
+                URL url = new URL(apiUrl);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                // Make a GET request
+                urlConnection.setRequestMethod("GET");
+                // Read the response
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                //Read through the input line
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                // Disconnect after reading the response
+                urlConnection.disconnect();
+                return response.toString();
+            } catch (Exception e) {
+                //Display error message
+                return "Error: " + e.getMessage();
+            }
+        }
+        /*
+         * Calls the processWeatherData method and parses a string variable.
+         */
+        @Override
+        protected void onPostExecute(String result) {
+            processWeatherData(result);
+        }
+        /*
+         * This method gets the information of the weather and displays it.
+         */
+        private void processWeatherData(String result) {
+            try {
+                // Convert the response string to a JSON object
+                JSONObject jsonResponse = new JSONObject(result);
+                // Extract information from the JSON object
+                String cityName = jsonResponse.getString("name");
+                JSONObject mainObject = jsonResponse.getJSONObject("main");
+                double temperature = mainObject.getDouble("temp");
+                JSONArray weatherArray = jsonResponse.getJSONArray("weather");
+                String weatherMain = "";
+                //If the array is NOT empty
+                if (weatherArray.length() > 0) {
+                    JSONObject weatherObject = weatherArray.getJSONObject(0);
+                    weatherMain = weatherObject.getString("main");
+                }
+                // Display the information in the TextView
+                String displayText = "City: " + cityName + "\nTemperature: " + temperature + " K \n" + weatherMain;
+                responseTextView.setText(displayText);
+                //Process the information - display images based on responses
+            } catch (Exception e) {
+                //Display error message
+                responseTextView.setText("Error processing JSON: " + e.getMessage());
+            }
+        }
+    }
+    /*
+     * This is a class that gets the information for web cameras.
+     */
+    private class FetchCameraTask extends AsyncTask<Void, Void, String> {
+        //Declare variable
+        TextView responseTextView;
+        /*
+         * This method will use the api key and make requests returning a response.
+         */
+        @Override
+        protected String doInBackground(Void... voids) {
+            responseTextView = findViewById(R.id.test2);
+            try {
+                //Set url
+                String apiUrl = "https://api.windy.com/webcams/api/v3/map/clusters?lang=en&northLat=51.6918741&southLat=51.2867602&eastLon=0.3340155&westLon=-0.5103751&zoom=8&include=images";
+                // Create a URL object
+                URL url = new URL(apiUrl);
+                // Open a connection
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                // Set the request method to GET
+                connection.setRequestMethod("GET");
+                // Set request headers
+                connection.setRequestProperty("accept", "application/json");
+                connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
+                // Get the response code
+                int responseCode = connection.getResponseCode();
+                // Read the response
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+                //Read through the input line
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                // Close the connection
+                connection.disconnect();
+                String resultString = new String(response);
+                //////////////////////////////////////// GETTING ERRORS BEACUSE OF .ToString()
+                // Return the response as a string
+                return resultString;
+            } catch (Exception e) {
+                //Display error message
+                return "Error: " + e.getMessage();
+            }
+        }
+        /*
+         * Calls the processWebcamData and parses a string variable.
+         */
+        @Override
+        protected void onPostExecute(String result) {
+            // Handle the result
+            //responseTextView.setText(result);
+            processWebcamData(result);
+        }
+        /*
+         * This method will process the webCam data.
+         */
+        private void processWebcamData(String result) {
+            try {
+                //Set a new string array
+                String[] jsonObjects = result.substring(1, result.length() - 1).split("\\},\\{");
+                //Set int variable
+                int o = 0;
+                //Loop through each item in the array
+                for (String s:jsonObjects) {
+                    o++;
+                }
+                //Set a string variable
+                String s = Integer.toString(o);
+                responseTextView.setText(s);
+            } catch (Exception e) {
+                // Print or log detailed error message
+                e.printStackTrace();
+                responseTextView.setText("Error processing JSON: " + e.getMessage());
+            }
+        }
+    }
+
 //    public void showWeatherMarker(String weather, LatLng location, String weatherMarkerTitle){
 //        if(Objects.equals(weather, "clear")){
 //            //Set the marker
