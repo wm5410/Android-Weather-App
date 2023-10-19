@@ -32,6 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -49,7 +50,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     //Declare variables
@@ -97,15 +100,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //Call the methods to get weather info and camera info
                 new FetchWeatherTask(latitude, longitude).execute();
                 FetchCameraTask cam = (FetchCameraTask) new FetchCameraTask(latitude, longitude).execute();
-                //Custom adapter
-                //customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
                 //On click listener
                 AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int index, long id) {
                         //Start the web camera detail activity
                         Intent intent = new Intent(view.getContext(), WebCameraDetailActivity.class);
-                        // extra data (need to get lat and lng somehow) and most importantlly webcam id
+                        // extra data (need to get lat and lng somehow) and most importantly webcam id
                         intent.putExtra("webcamId", "your_webcam_id");
                         intent.putExtra("latitude", cam.latitude);
                         intent.putExtra("longitude", cam.longitude);
@@ -114,6 +115,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 };
                 //Add onclick to the listview
                 cameraList.setOnItemClickListener(onItemClickListener);
+
+                //Add onclick listener for camera markers
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(@NonNull Marker marker) {
+                        String title = marker.getTitle();
+                        Intent intent = new Intent(MapsActivity.this, WebCameraDetailActivity.class);
+                        // extra data (need to get lat and lng somehow) and most importantly webcam id
+                        intent.putExtra("webcamId", "your_webcam_id");
+                        intent.putExtra("latitude", cam.latitude);
+                        intent.putExtra("longitude", cam.longitude);
+                        //Check if the title is "Camera"
+                        if("Camera".equals(title)){
+                            startActivity(intent);
+                        }
+                        return false;
+                    }
+                });
             }
             @Override
             public void onError(@NonNull Status status) {
@@ -400,7 +419,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         @Override
         protected String doInBackground(Void... voids) {
-            responseTextView = findViewById(R.id.test2);
+            //responseTextView = findViewById(R.id.test2);
             try {
                 //Set url
                 String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&include=categories&continents=OC&categories=traffic";
@@ -457,16 +476,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     JSONObject webcam = webcams.getJSONObject(i);
                     //Store its title in a string variable
                     String title = webcam.getString("title");
+                    //Store its webcamId in a string variable
                     String webcamId = webcam.getString("webcamId");
                     //Add to the new arrayList
                     webCamerasList.add(title);
-                    //This location code is wrong
-                    LatLng location = new LatLng(latitude, longitude);
                     //Get location information
-
                     new GetLocation(webcamId).execute();
                     new GetImage(webcamId).execute();
-
                 }
                 //Convert the webCamerasList to a String[]
                 webCameras = webCamerasList.toArray(new String[0]);
@@ -478,7 +494,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (String camera : webCameras) {
                     cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
                 }
-
             } catch (Exception e) {
                 // Print detailed error message
                 Log.d("Error processing JSON: ", e.getMessage());
@@ -535,37 +550,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             private LatLng processWebcamLocation(String result)
             {
                 try{
+                    //Create new json object
                     JSONObject json = new JSONObject(result);
-
                     // Extract latitude and longitude
                     JSONObject location = json.getJSONObject("location");
                     double latitude = location.getDouble("latitude");
                     double longitude = location.getDouble("longitude");
-
-                    //responseTextView.setText(latitude + " " + longitude);
-
+                    //Set a LatLng object for the location of the camera
                     LatLng webcamLocation = new LatLng(latitude, longitude);
-
                     //Set the marker with the custom icon
                     BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
                     //Add marker to the location
                     if(mMap != null){
-                        mMap.addMarker(new MarkerOptions().position(webcamLocation).icon(cameraMarker));
+                        mMap.addMarker(new MarkerOptions().position(webcamLocation).icon(cameraMarker).title("Camera"));
                     }
-
                     return new LatLng(latitude, longitude);
                 }
                 catch (Exception e) {
-                    responseTextView.setText(e.toString());
+                    //responseTextView.setText(e.toString());
                     return null;
                 }
-
             }
         }
 
         private class GetImage extends AsyncTask<Void, Void, String> {
             protected String id;
-
             public GetImage(String ID) {
                 this.id = ID;
             }
@@ -596,7 +605,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     in.close();
                     // Close the connection
                     connection.disconnect();
-
                     return response.toString();
                 } catch (Exception e) {
                     //Display error message
@@ -619,17 +627,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // Get the "edit" URL
                     String editUrl = urls.getString("edit");
 
-                    responseTextView.setText(editUrl);
+                    //responseTextView.setText(editUrl);
 
                     return editUrl;
                 }
                 catch (Exception e) {
-                    responseTextView.setText(e.toString());
+                    //responseTextView.setText(e.toString());
                     return null;
                 }
-
             }
         }
-
     }
 }

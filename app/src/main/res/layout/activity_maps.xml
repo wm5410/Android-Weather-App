@@ -12,7 +12,7 @@
         android:id="@+id/autocomplete_fragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1.5"
+        android:layout_weight="1"
         android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
         />
     <!--This is the map.-->
@@ -23,14 +23,6 @@
         android:layout_height="0dp"
         android:layout_weight="7"
         />
-    <TextView
-        android:id="@+id/test2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="@string/app_name"
-        ></TextView>
-
     <!--This layout displays a list of cameras that captured real life images.-->
     <ListView
         android:id="@+id/lv_camera_list"
