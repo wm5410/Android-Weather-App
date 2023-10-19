@@ -1,6 +1,7 @@
 package com.example.ourassignmentthree;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -39,6 +40,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -70,8 +72,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected ActivityMapsBinding binding;
     FusedLocationProviderClient fusedLocationProviderCLient;
     Location currentLocation;
-    String[] webCameras = new String[]{"Camera 1", "Camera 2", "Camera 3", "Camera 4", "Camera 5"};
+    String[] webCameras = new String[]{"Camera 1", "Camera 2"};
     CustomBaseAdapter customBaseAdapter;
+    ListView cameraList;
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
      */
@@ -97,22 +100,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
+                //Create and set variables
                 LatLng latLng = place.getLatLng();
-
                 double latitude = latLng.latitude;
                 double longitude = latLng.longitude;
-
+                //Access the listview
+                cameraList = (ListView) findViewById(R.id.lv_camera_list);
                 // Handle the selected place
                 moveCameraToPlace(place);
                 //Call the methods to get weather info and camera info
                 new FetchWeatherTask(latitude, longitude).execute();
                 new FetchCameraTask(latitude, longitude).execute();
-                //Access the listview
-                ListView cameraList = (ListView) findViewById(R.id.lv_camera_list);
                 //Custom adapter
-                customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
-                //Bind adapter to listview
-                cameraList.setAdapter(customBaseAdapter);
+                //customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
                 //On click listener
                 AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
                     @Override
@@ -214,8 +214,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (location != null) {
                     //Set currentLocation to location
                     currentLocation = location;
-                    //Test - Display a line in the output with the latitude and longitude
-                    Log.d("LocationDebug", "Latitude: " + currentLocation.getLatitude() + ", Longitude: " + currentLocation.getLongitude());
                     //Create a new LatLng variable and show the marker
                     LatLng newLat = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                     showMarker(newLat, "Current location");
@@ -235,7 +233,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Add marker to the current location and name it "Current Location"
         mMap.addMarker(new MarkerOptions().position(location).icon(customMarker).title(markerTitle));
         //Move the camera to where the current location is
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 13));
     }
     /*
      * This will move the camera and add the marker to the new location that was searched.
@@ -259,7 +257,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
         //Declare variable
-        TextView responseTextView;
         private double latitude;
         private double longitude;
 
@@ -273,7 +270,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         @Override
         protected String doInBackground(Void... voids) {
-            responseTextView = findViewById(R.id.test);
             try {
                 //Create and set variables
                 String apiKey1 = "2d6d25ab6612f49333551ae60271d591";
@@ -316,20 +312,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Convert the response string to a JSON object
                 JSONObject jsonResponse = new JSONObject(result);
                 // Extract information from the JSON object
-                String cityName = jsonResponse.getString("name");
                 JSONObject mainObject = jsonResponse.getJSONObject("main");
                 double temperature = mainObject.getDouble("temp");
                 JSONObject coordObject = jsonResponse.getJSONObject("coord");
                 double longitude = coordObject.getDouble("lon");
                 double latitude = coordObject.getDouble("lat");
-                Log.d("Code Debug", "Latitude: " + latitude + ", Longitude: " + longitude);
                 JSONArray weatherArray = jsonResponse.getJSONArray("weather");
                 String weatherMain = "";
+                //Offset the latitude and longitude so it won't be covered by the location marker
+                latitude += 0.01;
+                longitude += 0.01;
                 //If the array is NOT empty
                 if (weatherArray.length() > 0) {
                     JSONObject weatherObject = weatherArray.getJSONObject(0);
                     weatherMain = weatherObject.getString("main");
                 }
+                // Format latitude and longitude to display only two decimal places and set a string variable
+                @SuppressLint("DefaultLocale") String formattedLatitude = String.format("%.2f", latitude);
+                @SuppressLint("DefaultLocale") String formattedLongitude = String.format("%.2f", longitude);
+                @SuppressLint("DefaultLocale") String formattedTemperature = String.format("%.2f", temperature);
+                String snippet = "Latitude: " + formattedLatitude + ", Longitude: " + formattedLongitude + ", Temperature: " + formattedTemperature;
                 //Check weather conditions and add custom markers
                 if(weatherMain.equalsIgnoreCase("Rain")){
                     //Set the marker with the custom icon
@@ -337,7 +339,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Rainy"));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("Clouds")){
@@ -346,8 +348,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
-                        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Cloudy"));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("Clear")){
@@ -356,7 +357,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Sunny").snippet(snippet));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("drizzle")){
@@ -365,7 +366,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Drizzling"));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("snow")){
@@ -374,7 +375,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Snow"));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("Thunderstorm")){
@@ -383,16 +384,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Thunderstorm"));
                     }
                 }
-                // Display the information in the TextView
-                String displayText = "City: " + cityName + "\nTemperature: " + temperature + " K \n" + weatherMain;
-                responseTextView.setText(displayText);
-                //Process the information - display images based on responses
             } catch (Exception e) {
                 //Display error message
-                responseTextView.setText("Error processing JSON: " + e.getMessage());
+                Log.d("Error processing JSON: ", e.getMessage());
             }
         }
     }
@@ -403,8 +400,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Declare variable
         TextView responseTextView;
         ListView responseListView;
-        private double latitude;
-        private double longitude;
+        protected double latitude;
+        protected double longitude;
 
         public FetchCameraTask(double latitude, double longitude) {
             this.latitude = latitude;
@@ -444,7 +441,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 in.close();
                 // Close the connection
                 connection.disconnect();
-
+                Log.d("Response for the WebCamera: ", response.toString());
                 // Return the response as a string
                 return response.toString();
             } catch (Exception e) {
@@ -465,48 +462,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         private void processWebcamData(String result) {
             try {
-
-                //
-                //USE CUSTOM BASE ADAPTER ON THIS
-                //
-                JSONArray jsonArray = new JSONArray();
                 JSONObject jsonObject = new JSONObject(result);
                 JSONArray webcams = jsonObject.getJSONArray("webcams");
-                ArrayList<String> titles = new ArrayList<>();
-                String[] titles1 = new String[webcams.length()];
 
                 StringBuilder resultText = new StringBuilder();
 
                 for (int i = 0; i < webcams.length(); i++) {
                     JSONObject webcam = webcams.getJSONObject(i);
                     String title = webcam.getString("title");
-                    int viewCount = webcam.getInt("viewCount");
-                    long webcamId = webcam.getLong("webcamId");
-                    String status = webcam.getString("status");
-                    String lastUpdatedOn = webcam.getString("lastUpdatedOn");
+                    double latitude = webcam.getDouble("latitude");
+                    double longitude = webcam.getDouble("longitude");
+                    LatLng location = new LatLng(latitude, longitude);
+                    webCameras = new String[]{title};
+
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
+                    //Add marker to the location
+                    if(mMap != null){
+                            mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
+                    }
+
+//                    int viewCount = webcam.getInt("viewCount");
+//                    long webcamId = webcam.getLong("webcamId");
+//                    String status = webcam.getString("status");
+//                    String lastUpdatedOn = webcam.getString("lastUpdatedOn");
 
                     // Append properties to the resultText
                     //For testing
-                    resultText.append("Webcam ").append(i + 1).append(" Properties:\n");
-                    resultText.append("Title: ").append(title).append("\n");
-                    resultText.append("Webcam ID: ").append(webcamId).append("\n");
+//                    resultText.append("Webcam ").append(i + 1).append(" Properties:\n");
+//                    resultText.append("Title: ").append(title).append("\n");
+//                    resultText.append("Webcam ID: ").append(webcamId).append("\n");
                     //
-
-                    titles.add(title);
                 }
 
-                CustomBaseAdapter adapter = new CustomBaseAdapter(getApplicationContext(), titles1);
-                responseListView.setAdapter(adapter);
+                customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
+                cameraList.setAdapter(customBaseAdapter);
 
                 StringBuilder cameraInfoBuilder = new StringBuilder();
                 for (String camera : webCameras) {
                     cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
                 }
-                //responseTextView.setText(cameraInfoBuilder.append(webCameras));
-
-
+                responseTextView.setText(cameraInfoBuilder.append(Arrays.toString(webCameras)));
                 responseTextView.setText(resultText.toString());
-
             } catch (Exception e) {
                 // Print or log detailed error message
                 e.printStackTrace();
