@@ -414,7 +414,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             responseListView = findViewById(R.id.lv_camera_list);
             try {
                 //Set url
-                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=distance&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&continents=OC&categories=traffic";
+                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&include=categories&continents=OC&categories=traffic";
+                //String apiUrl1 = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby=-37.7826%2C175.2528%2C100&include=categories&continents=OC&categories=traffic\n";
                 // Create a URL object
                 URL url = new URL(apiUrl);
                 // Open a connection
@@ -438,6 +439,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Close the connection
                 connection.disconnect();
                 Log.d("Response for the WebCamera: ", response.toString());
+
                 // Return the response as a string
                 return response.toString();
             } catch (Exception e) {
@@ -459,7 +461,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         private void processWebcamData(String result) {
             try {
                 //if(result.startsWith("{") && result.endsWith("}")){
-                    JSONObject jsonObject = new JSONObject();
+                    JSONObject jsonObject = new JSONObject(result);
+                    //responseTextView.setText(result);
                     JSONArray webcams = jsonObject.getJSONArray("webcams");
 
                     for (int i = 0; i < webcams.length(); i++) {
@@ -486,7 +489,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for (String camera : webCameras) {
                         cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
                     }
-                    responseTextView.setText(cameraInfoBuilder.append(Arrays.toString(webCameras)));
+                    responseTextView.setText(webCameras.length);
                     //responseTextView.setText(resultText.toString());
                 //}
                 //else {
