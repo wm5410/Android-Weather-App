@@ -64,6 +64,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     //Declare variables
@@ -259,12 +260,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Declare variable
         protected double latitude;
         protected double longitude;
-
+        /*
+         * This is the constructor which initialises two variables.
+         */
         public FetchWeatherTask(double latitude, double longitude) {
             this.latitude = latitude;
             this.longitude = longitude;
         }
-
         /*
          * This method will use the api key and make requests returning a response.
          */
@@ -336,7 +338,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Rainy"));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Rainy").snippet(snippet));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("Clouds")){
@@ -345,7 +347,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Cloudy"));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Cloudy").snippet(snippet));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("Clear")){
@@ -363,7 +365,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Drizzling"));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Drizzling").snippet(snippet));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("snow")){
@@ -372,7 +374,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Snow"));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Snow").snippet(snippet));
                     }
                 }
                 else if(weatherMain.equalsIgnoreCase("Thunderstorm")){
@@ -381,7 +383,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add marker to the location
                     if(mMap != null){
                         LatLng location = new LatLng(latitude, longitude);
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Thunderstorm"));
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker).title("Thunderstorm").snippet(snippet));
                     }
                 }
             } catch (Exception e) {
@@ -395,8 +397,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     private class FetchCameraTask extends AsyncTask<Void, Void, String> {
         //Declare variable
-        TextView responseTextView;
-        ListView responseListView;
         protected double latitude;
         protected double longitude;
 
@@ -410,12 +410,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         @Override
         protected String doInBackground(Void... voids) {
-            responseTextView = findViewById(R.id.test2);
-            responseListView = findViewById(R.id.lv_camera_list);
             try {
                 //Set url
                 String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&include=categories&continents=OC&categories=traffic";
-                //String apiUrl1 = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby=-37.7826%2C175.2528%2C100&include=categories&continents=OC&categories=traffic\n";
                 // Create a URL object
                 URL url = new URL(apiUrl);
                 // Open a connection
@@ -438,8 +435,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 in.close();
                 // Close the connection
                 connection.disconnect();
-                Log.d("Response for the WebCamera: ", response.toString());
-
                 // Return the response as a string
                 return response.toString();
             } catch (Exception e) {
@@ -460,44 +455,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         private void processWebcamData(String result) {
             try {
-                //if(result.startsWith("{") && result.endsWith("}")){
-                    JSONObject jsonObject = new JSONObject(result);
-                    //responseTextView.setText(result);
-                    JSONArray webcams = jsonObject.getJSONArray("webcams");
-
-                    for (int i = 0; i < webcams.length(); i++) {
-                        JSONObject webcam = webcams.getJSONObject(i);
-                        String title = webcam.getString("title");
-//                    double latitude = webcam.getDouble("latitude");
-//                    double longitude = webcam.getDouble("longitude");
-                        LatLng location = new LatLng(latitude, longitude);
-                        responseTextView.setText(location.toString());
-                        webCameras = new String[]{title};
-                        //responseTextView.setText(title);
-
-                        //Set the marker with the custom icon
-                        BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
-                        //Add marker to the location
-                        if(mMap != null){
-                                mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
-                        }
-                        //Set the custom adapter to the webCameras list
-                        customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
-                        cameraList.setAdapter(customBaseAdapter);
+                //Create JSONObject and JSONArray variables
+                JSONObject jsonObject = new JSONObject(result);
+                Log.d("MESSAGE: ", result);
+                JSONArray webcams = jsonObject.getJSONArray("webcams");
+                //Create a new arrayList to store the cameras
+                List<String> webCamerasList = new ArrayList<>();
+                for (int i = 0; i < webcams.length(); i++) {
+                    //Get the item
+                    JSONObject webcam = webcams.getJSONObject(i);
+                    //Store its title in a string variable
+                    String title = webcam.getString("title");
+                    //Add to the new arrayList
+                    webCamerasList.add(title);
+                    //double latitude = webcam.getDouble("latitude");
+                    //double longitude = webcam.getDouble("longitude");
+                    LatLng location = new LatLng(latitude, longitude);
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
+                    //Add marker to the location
+                    if(mMap != null){
+                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
                     }
-                    StringBuilder cameraInfoBuilder = new StringBuilder();
-                    for (String camera : webCameras) {
-                        cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
-                    }
-                    responseTextView.setText(webCameras.length);
-                    //responseTextView.setText(resultText.toString());
-                //}
-                //else {
-                    //responseTextView.setText("It is not working: " + result);
-                //}
+                }
+                //Convert the webCamerasList to a String[]
+                webCameras = webCamerasList.toArray(new String[0]);
+                //Set the custom adapter to the webCameras list
+                customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
+                cameraList.setAdapter(customBaseAdapter);
+                //Loop through each camera title in the webCameras array
+                StringBuilder cameraInfoBuilder = new StringBuilder();
+                for (String camera : webCameras) {
+                    cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
+                }
             } catch (Exception e) {
                 // Print detailed error message
-                responseTextView.setText("Error processing JSON: " + e.getMessage());
                 Log.d("Error processing JSON: ", e.getMessage());
             }
         }

@@ -46,7 +46,7 @@ public class CustomBaseAdapter extends BaseAdapter {
      */
     @Override
     public long getItemId(int i) {
-        return 0;
+        return i;
     }
     //This gets and sets the view.
     @Override
