@@ -465,6 +465,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Get location information
 
                     new GetLocation(webcamId).execute();
+                    new GetImage(webcamId).execute();
 
                 }
                 //Convert the webCamerasList to a String[]
@@ -541,7 +542,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     double latitude = location.getDouble("latitude");
                     double longitude = location.getDouble("longitude");
 
-                    responseTextView.setText(latitude + " " + longitude);
+                    //responseTextView.setText(latitude + " " + longitude);
 
                     LatLng webcamLocation = new LatLng(latitude, longitude);
 
@@ -553,6 +554,74 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     return new LatLng(latitude, longitude);
+                }
+                catch (Exception e) {
+                    responseTextView.setText(e.toString());
+                    return null;
+                }
+
+            }
+        }
+
+        private class GetImage extends AsyncTask<Void, Void, String> {
+            protected String id;
+
+            public GetImage(String ID) {
+                this.id = ID;
+            }
+            @Override
+            protected String doInBackground(Void... voids) {
+                try {
+                    //Set url
+                    String apiUrl = "https://api.windy.com/webcams/api/v3/webcams/" + id + "?lang=en&include=urls";
+                    // Create a URL object
+                    URL url = new URL(apiUrl);
+                    // Open a connection
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    // Set the request method to GET
+                    connection.setRequestMethod("GET");
+                    // Set request headers
+                    connection.setRequestProperty("accept", "application/json");
+                    connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
+                    // Get the response code
+                    int responseCode = connection.getResponseCode();
+                    // Read the response
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuffer response = new StringBuffer();
+                    //Read through the input line
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    // Close the connection
+                    connection.disconnect();
+
+                    return response.toString();
+                } catch (Exception e) {
+                    //Display error message
+                    return "Error: " + e.getMessage();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                // Handle the result
+                processImg(result);
+            }
+
+            private String processImg(String result)
+            {
+                try{
+                    JSONObject json = new JSONObject(result);
+
+                    JSONObject urls = json.getJSONObject("urls");
+                    // Get the "edit" URL
+                    String editUrl = urls.getString("edit");
+
+                    responseTextView.setText(editUrl);
+
+                    return editUrl;
                 }
                 catch (Exception e) {
                     responseTextView.setText(e.toString());
