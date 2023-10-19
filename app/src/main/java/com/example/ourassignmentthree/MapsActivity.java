@@ -6,11 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,12 +21,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.ourassignmentthree.databinding.ActivityMapsBinding;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -40,7 +32,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -48,19 +39,13 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,7 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 moveCameraToPlace(place);
                 //Call the methods to get weather info and camera info
                 new FetchWeatherTask(latitude, longitude).execute();
-                new FetchCameraTask(latitude, longitude).execute();
+                FetchCameraTask cam = (FetchCameraTask) new FetchCameraTask(latitude, longitude).execute();
                 //Custom adapter
                 //customBaseAdapter = new CustomBaseAdapter(getApplicationContext(), webCameras);
                 //On click listener
@@ -120,6 +105,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onItemClick(AdapterView<?> adapterView, View view, int index, long id) {
                         //Start the web camera detail activity
                         Intent intent = new Intent(view.getContext(), WebCameraDetailActivity.class);
+                        // extra data (need to get lat and lng somehow) and most importantlly webcam id
+                        intent.putExtra("webcamId", "your_webcam_id");
+                        intent.putExtra("latitude", cam.latitude);
+                        intent.putExtra("longitude", cam.longitude);
                         startActivity(intent);
                     }
                 };
@@ -399,6 +388,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Declare variable
         protected double latitude;
         protected double longitude;
+        TextView responseTextView;
 
         public FetchCameraTask(double latitude, double longitude) {
             this.latitude = latitude;
@@ -410,6 +400,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         @Override
         protected String doInBackground(Void... voids) {
+            responseTextView = findViewById(R.id.test2);
             try {
                 //Set url
                 String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&include=categories&continents=OC&categories=traffic";
@@ -466,17 +457,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     JSONObject webcam = webcams.getJSONObject(i);
                     //Store its title in a string variable
                     String title = webcam.getString("title");
+                    String webcamId = webcam.getString("webcamId");
                     //Add to the new arrayList
                     webCamerasList.add(title);
-                    //double latitude = webcam.getDouble("latitude");
-                    //double longitude = webcam.getDouble("longitude");
+                    //This location code is wrong
                     LatLng location = new LatLng(latitude, longitude);
-                    //Set the marker with the custom icon
-                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
-                    //Add marker to the location
-                    if(mMap != null){
-                        mMap.addMarker(new MarkerOptions().position(location).icon(cameraMarker));
-                    }
+                    //Get location information
+
+                    new GetLocation(webcamId).execute();
+
                 }
                 //Convert the webCamerasList to a String[]
                 webCameras = webCamerasList.toArray(new String[0]);
@@ -488,10 +477,90 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (String camera : webCameras) {
                     cameraInfoBuilder.append(camera).append("\n"); // Add a new line for each camera
                 }
+
             } catch (Exception e) {
                 // Print detailed error message
                 Log.d("Error processing JSON: ", e.getMessage());
             }
         }
+
+        private class GetLocation extends AsyncTask<Void, Void, String> {
+            protected String id;
+
+            public GetLocation(String ID) {
+                this.id = ID;
+            }
+            @Override
+            protected String doInBackground(Void... voids) {
+                try {
+                    //Set url
+                    String apiUrl = "https://api.windy.com/webcams/api/v3/webcams/" + id + "?lang=en&include=location";
+                    // Create a URL object
+                    URL url = new URL(apiUrl);
+                    // Open a connection
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    // Set the request method to GET
+                    connection.setRequestMethod("GET");
+                    // Set request headers
+                    connection.setRequestProperty("accept", "application/json");
+                    connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
+                    // Get the response code
+                    int responseCode = connection.getResponseCode();
+                    // Read the response
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuffer response = new StringBuffer();
+                    //Read through the input line
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    // Close the connection
+                    connection.disconnect();
+
+                    return response.toString();
+                } catch (Exception e) {
+                    //Display error message
+                    return "Error: " + e.getMessage();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                // Handle the result
+                processWebcamLocation(result);
+            }
+
+            private LatLng processWebcamLocation(String result)
+            {
+                try{
+                    JSONObject json = new JSONObject(result);
+
+                    // Extract latitude and longitude
+                    JSONObject location = json.getJSONObject("location");
+                    double latitude = location.getDouble("latitude");
+                    double longitude = location.getDouble("longitude");
+
+                    responseTextView.setText(latitude + " " + longitude);
+
+                    LatLng webcamLocation = new LatLng(latitude, longitude);
+
+                    //Set the marker with the custom icon
+                    BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
+                    //Add marker to the location
+                    if(mMap != null){
+                        mMap.addMarker(new MarkerOptions().position(webcamLocation).icon(cameraMarker));
+                    }
+
+                    return new LatLng(latitude, longitude);
+                }
+                catch (Exception e) {
+                    responseTextView.setText(e.toString());
+                    return null;
+                }
+
+            }
+        }
+
     }
 }
