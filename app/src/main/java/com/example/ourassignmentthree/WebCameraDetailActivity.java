@@ -89,14 +89,14 @@ public class WebCameraDetailActivity extends AppCompatActivity {
         }else {
             // Retrieve data from the intent
             title = getIntent().getStringExtra("title");
-//            city = getIntent().getStringExtra("city");
-//            region = getIntent().getStringExtra("region");
-//            latitude = getIntent().getStringExtra("latitude");
-//            longitude = getIntent().getStringExtra("longitude");
+            city = getIntent().getStringExtra("city");
+            region = getIntent().getStringExtra("region");
+            latitude = getIntent().getStringExtra("latitude");
+            longitude = getIntent().getStringExtra("longitude");
 
             // Display data
             textViewTitle.setText(title);
-//            textView.setText("Latitude: " + latitude + "\nLongitude: " + longitude + "\nCity: " + city + "\nRegion: " + region);
+            textView.setText("Latitude: " + latitude + "\nLongitude: " + longitude + "\nCity: " + city + "\nRegion: " + region);
         }
     }
 }
