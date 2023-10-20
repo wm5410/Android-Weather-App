@@ -61,6 +61,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String[] webCameras = new String[]{};
     CustomBaseAdapter customBaseAdapter;
     ListView cameraList;
+    List<String> cameraTitles = new ArrayList<>();
+    List<String> cameraCities = new ArrayList<>();
+    List<String> cameraRegions = new ArrayList<>();
+    List<String> cameraLatitudes = new ArrayList<>();
+    List<String> cameraLongitudes = new ArrayList<>();
+    boolean isMarkerClicked = false;
+    int blah = 0;
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
      */
@@ -101,15 +108,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int index, long id) {
-                        //Start the web camera detail activity
+                        //Set isMarkerClicked to false
+                        isMarkerClicked = false;
+                        //Create an intent
                         Intent intent = new Intent(view.getContext(), WebCameraDetailActivity.class);
-                        // extra data (need to get lat and lng somehow) and most importantly webcam id
+                        //Put extra information so the WebCameraDetail Activity can access it
+                        intent.putStringArrayListExtra("cameraTitles", (ArrayList<String>) cameraTitles);
+                        intent.putStringArrayListExtra("cameraCities", (ArrayList<String>) cameraCities);
+                        intent.putStringArrayListExtra("cameraRegions", (ArrayList<String>) cameraRegions);
+                        intent.putStringArrayListExtra("cameraLatitudes", (ArrayList<String>) cameraLatitudes);
+                        intent.putStringArrayListExtra("cameraLongitudes", (ArrayList<String>) cameraLongitudes);
+                        intent.putExtra("selectedIndex", index);
                         intent.putExtra("webcamId", "your_webcam_id");
-                        intent.putExtra("title", cam.title);
-                        intent.putExtra("city", cam.city);
-                        intent.putExtra("region", cam.region);
-                        intent.putExtra("latitude", cam.latitude);
-                        intent.putExtra("longitude", cam.longitude);
+                        intent.putExtra("isMarkerClicked", isMarkerClicked);
                         //Start the activity
                         startActivity(intent);
                     }
@@ -120,22 +131,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker) {
-                        String title = marker.getTitle();
+                        //GET the tag for the marker
+                        String markerTag = (String) marker.getTag();
+                        //Get the latitude and longitude of the selected camera
+                        LatLng lat = marker.getPosition();
+                        //Set isMarkerClicked to true
+                        isMarkerClicked = true;
+                        //Create an intent
                         Intent intent = new Intent(MapsActivity.this, WebCameraDetailActivity.class);
-                        // extra data (need to get lat and lng somehow) and most importantly webcam id
+                        //Put extra information so the WebCameraDetail Activity can access it
+                        intent.putExtra("isMarkerClicked", isMarkerClicked);
                         intent.putExtra("webcamId", "your_webcam_id");
-                        intent.putExtra("title", cam.title);
-                        intent.putExtra("city", cam.city);
-                        intent.putExtra("region", cam.region);
-                        intent.putExtra("latitude", cam.latitude);
-                        intent.putExtra("longitude", cam.longitude);
-                        //Check if the title is "Camera"
-                        if("Camera".equals(title)){
+
+                        String Title = cameraTitles.get(blah);
+                        intent.putExtra("title", Title);
+
+                        //Check if the tag matches with the camera teal so that the activity will only start when clicked on a camera marker
+                        if("img_mm_camera_teal".equals(markerTag)){
                             startActivity(intent);
                         }
                         return false;
                     }
                 });
+                //Clear the camera lists
+                cameraTitles.clear();
+                cameraCities.clear();
+                cameraRegions.clear();
+                cameraLatitudes.clear();
+                cameraLongitudes.clear();
             }
             @Override
             public void onError(@NonNull Status status) {
@@ -334,7 +357,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 longitude += 0.03;
                 //If the array is NOT empty
                 if (weatherArray.length() > 0) {
+                    //Create a JSONObject
                     JSONObject weatherObject = weatherArray.getJSONObject(0);
+                    //Set the string variable
                     weatherMain = weatherObject.getString("main");
                 }
                 // Format latitude and longitude to display only two decimal places and set a string variable
@@ -413,11 +438,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected String city;
         protected String region;
         protected String title;
+        /*
+         * This is the constructor which sets a latitude and longitude variable.
+         */
         public FetchCameraTask(double latitude, double longitude) {
             this.latitude = latitude;
             this.longitude = longitude;
         }
-
         /*
          * This method will use the api key and make requests returning a response.
          */
@@ -435,12 +462,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Set request headers
                 connection.setRequestProperty("accept", "application/json");
                 connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
-                // Get the response code
-                int responseCode = connection.getResponseCode();
                 // Read the response
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String inputLine;
-                StringBuffer response = new StringBuffer();
+                StringBuilder response = new StringBuilder();
                 //Read through the input line
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
@@ -482,6 +507,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String webcamId = webcam.getString("webcamId");
                     //Add to the new arrayList
                     webCamerasList.add(title);
+                    //Add the title to the list to store it there
+                    cameraTitles.add(title);
                     //Get location information
                     new GetLocation(webcamId).execute();
                     new GetImage(webcamId).execute();
@@ -501,14 +528,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("Error processing JSON: ", e.getMessage());
             }
         }
-
+        /*
+         * This is a class used to get the location of the webCameras.
+         */
         private class GetLocation extends AsyncTask<Void, Void, String> {
+            //Declare variables
             protected String id;
             protected double Latitude;
             protected double Longitude;
+            /*
+             * This is the constructor which sets an id.
+             */
             public GetLocation(String ID) {
                 this.id = ID;
             }
+            /*
+             * This method process the api key and url.
+             */
             @Override
             protected String doInBackground(Void... voids) {
                 try {
@@ -528,7 +564,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // Read the response
                     BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     String inputLine;
-                    StringBuffer response = new StringBuffer();
+                    StringBuilder response = new StringBuilder();
                     //Read through the input line
                     while ((inputLine = in.readLine()) != null) {
                         response.append(inputLine);
@@ -542,47 +578,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     return "Error: " + e.getMessage();
                 }
             }
-
+            /*
+             * Calls the processWebcamLocation method and execute it.
+             */
             @Override
             protected void onPostExecute(String result) {
                 // Handle the result
                 processWebcamLocation(result);
             }
-
+            /*
+             * This method handles the webCameras and displays them on the map.
+             */
             private LatLng processWebcamLocation(String result)
             {
                 try{
                     //Create new json object
                     JSONObject json = new JSONObject(result);
+                    Log.d("jsonObject", json.toString());
                     // Extract latitude and longitude
                     JSONObject location = json.getJSONObject("location");
                     Latitude = location.getDouble("latitude");
                     Longitude = location.getDouble("longitude");
                     city = location.getString("city");
                     region = location.getString("region");
-                    Log.d("CITY MESSAGE: ", city + " and region is " + region);
+                    //Add variables to their respective arrayLists to store
+                    cameraCities.add(city);
+                    cameraRegions.add(region);
+                    cameraLatitudes.add(String.valueOf(Latitude));
+                    cameraLongitudes.add(String.valueOf(Longitude));
                     //Set a LatLng object for the location of the camera
                     LatLng webcamLocation = new LatLng(Latitude, Longitude);
                     //Set the marker with the custom icon
                     BitmapDescriptor cameraMarker = BitmapDescriptorFactory.fromResource(R.drawable.img_mm_camera_teal);
                     //Add marker to the location
                     if(mMap != null){
-                        mMap.addMarker(new MarkerOptions().position(webcamLocation).icon(cameraMarker).title("Camera"));
+                        (mMap.addMarker(new MarkerOptions().position(webcamLocation).icon(cameraMarker))).setTag("img_mm_camera_teal");
                     }
                     return new LatLng(Latitude, Longitude);
                 }
                 catch (Exception e) {
-                    //responseTextView.setText(e.toString());
                     return null;
                 }
             }
         }
-
+        /*
+         * This method handles everything for the images captured by the webcams.
+         */
         private class GetImage extends AsyncTask<Void, Void, String> {
+            //Declare variables
             protected String id;
+            /*
+             * This is the constructor of the class and it sets an id.
+             */
             public GetImage(String ID) {
                 this.id = ID;
             }
+            /*
+             * This method process the api key and url.
+             */
             @Override
             protected String doInBackground(Void... voids) {
                 try {
@@ -597,8 +650,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // Set request headers
                     connection.setRequestProperty("accept", "application/json");
                     connection.setRequestProperty("x-windy-api-key", "9geNKlDpdftqFJ6ytFBTBck1kUrTdM8v");
-                    // Get the response code
-                    int responseCode = connection.getResponseCode();
                     // Read the response
                     BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     String inputLine;
@@ -616,28 +667,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     return "Error: " + e.getMessage();
                 }
             }
-
+            /*
+             * Calls the processImg method and executes it.
+             */
             @Override
             protected void onPostExecute(String result) {
                 // Handle the result
                 processImg(result);
             }
-
+            /*
+             * This method handles the images and displays them in the webCameraDetailActivity.
+             */
             private String processImg(String result)
             {
                 try{
+                    //Create a JSONObject
                     JSONObject json = new JSONObject(result);
-
+                    //Get the urls
                     JSONObject urls = json.getJSONObject("urls");
                     // Get the "edit" URL
                     String editUrl = urls.getString("edit");
 
-                    //responseTextView.setText(editUrl);
-
                     return editUrl;
                 }
                 catch (Exception e) {
-                    //responseTextView.setText(e.toString());
                     return null;
                 }
             }
