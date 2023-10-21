@@ -13,7 +13,6 @@ import java.util.ArrayList;
 public class WebCameraDetailActivity extends AppCompatActivity {
     //Declare variables
     protected String title;
-    protected int webcamId;
     protected String latitude;
     protected String longitude;
     protected String city;
