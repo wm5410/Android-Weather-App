@@ -66,6 +66,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     List<String> cameraRegions = new ArrayList<>();
     List<String> cameraLatitudes = new ArrayList<>();
     List<String> cameraLongitudes = new ArrayList<>();
+    List<String> cameraURL = new ArrayList<>();
     boolean isMarkerClicked = false;
     private int blah = 0;
     /*
@@ -143,6 +144,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         intent.putExtra("isMarkerClicked", isMarkerClicked);
                         intent.putExtra("webcamId", "your_webcam_id");
 
+                        //intent.putExtra("webcamURL", cameraURL.get(0));
+
                         if("Camera 0".equals(cameraIndex)){
                             String Title = cameraTitles.get(0);
                             String City = cameraCities.get(0);
@@ -154,6 +157,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             intent.putExtra("region", Region);
                             intent.putExtra("latitude", Latitude);
                             intent.putExtra("longitude", Longitude);
+
+                            //intent.putExtra("URL", cameraURL.get(0));
                         }
                         else if("Camera 1".equals(cameraIndex)){
                             String Title = cameraTitles.get(1);
@@ -350,7 +355,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /*
      * This is a class that gets the weather information
      */
-    private class FetchWeatherTask extends AsyncTask<Void, Void, String> {
+    public class FetchWeatherTask extends AsyncTask<Void, Void, String> {
         //Declare variable
         protected double latitude;
         protected double longitude;
@@ -512,7 +517,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected String doInBackground(Void... voids) {
             try {
                 //Set url
-                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=and&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C100&include=categories&continents=OC&categories=traffic";
+                String apiUrl = "https://api.windy.com/webcams/api/v3/webcams?lang=en&limit=5&offset=0&categoryOperation=or&sortKey=popularity&sortDirection=asc&nearby="+ latitude + "%2C" + longitude+ "%2C30&include=images&continents=OC&categories=traffic%2Cmeteo";
                 // Create a URL object
                 URL url = new URL(apiUrl);
                 // Open a connection
@@ -567,10 +572,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     title = webcam.getString("title");
                     //Store its webcamId in a string variable
                     String webcamId = webcam.getString("webcamId");
+
+                    JSONObject images = webcam.getJSONObject("images");
+                    JSONObject current = images.getJSONObject("current");
+                    String previewImageUrl = current.getString("preview");
+                    //ImageView imageView = findViewById(R.id.iv_web_camera_footage);
+
                     //Add to the new arrayList
                     webCamerasList.add(title);
                     //Add the title to the list to store it there
                     cameraTitles.add(title);
+                    //Add URL to the array
+                    cameraURL.add(previewImageUrl);
                     //Get location information
                     new GetLocation(webcamId, blah).execute();
                     new GetImage(webcamId).execute();
