@@ -4,9 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -23,6 +27,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
     protected double latitudeDouble;
     protected double longitudeDouble;
     protected boolean isMarkerClicked;
+    protected String image;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -32,6 +37,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
         //GET the id's of the two textViews
         TextView textViewTitle = findViewById(R.id.tv_camera_title);
         TextView textView = findViewById(R.id.tv_location_info);
+        ImageView imageView = findViewById(R.id.iv_web_camera_footage);
         //Receive the selected index from the intent
         int selectedIndex = getIntent().getIntExtra("selectedIndex", -1);
         isMarkerClicked = getIntent().getBooleanExtra("isMarkerClicked", false);
@@ -40,6 +46,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
         ArrayList<String> cameraRegions = getIntent().getStringArrayListExtra("cameraRegions");
         ArrayList<String> cameraLatitudes = getIntent().getStringArrayListExtra("cameraLatitudes");
         ArrayList<String> cameraLongitudes = getIntent().getStringArrayListExtra("cameraLongitudes");
+        ArrayList<String> cameraURLS = getIntent().getStringArrayListExtra("cameraURL");
         //Check if a marker was clicked or a item in the listView was clicked
         if(!isMarkerClicked){
             //Handle the case where a item in the listView is clicked
@@ -51,6 +58,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
                     region = cameraRegions.get(selectedIndex);
                     latitude = cameraLatitudes.get(selectedIndex);
                     longitude = cameraLongitudes.get(selectedIndex);
+                    image = cameraURLS.get(selectedIndex);
 
                     if(latitude != null && longitude != null){
                         try{
@@ -68,6 +76,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
                     region = "Invalid selection";
                     latitude = "Invalid selection";
                     longitude = "Invalid selection";
+                    image = "Invalid selection";
                 }
             }
             else{
@@ -76,6 +85,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
                 region = "Region not found";
                 latitude = "Latitude not found";
                 longitude = "Longitude not found";
+                image = "Image not found";
             }
             //GET data from the Maps Activity
             webcamId = getIntent().getIntExtra("webcamId", 0);
@@ -83,7 +93,8 @@ public class WebCameraDetailActivity extends AppCompatActivity {
             @SuppressLint("DefaultLocale") String formattedLatitude = String.format("%.3f", latitudeDouble);
             @SuppressLint("DefaultLocale") String formattedLongitude = String.format("%.3f", longitudeDouble);
 
-            //Display in the textViews
+            //Display data
+            Picasso.get().load(image).into(imageView);
             textViewTitle.setText(title);
             textView.setText("Latitude: " + formattedLatitude + "\nLongitude: " + formattedLongitude + "\nCity: " + city + "\nRegion: " + region);
         }else {
@@ -93,8 +104,9 @@ public class WebCameraDetailActivity extends AppCompatActivity {
             region = getIntent().getStringExtra("region");
             latitude = getIntent().getStringExtra("latitude");
             longitude = getIntent().getStringExtra("longitude");
-
+            image = getIntent().getStringExtra("cameraURL");
             // Display data
+            Picasso.get().load(image).into(imageView);
             textViewTitle.setText(title);
             textView.setText("Latitude: " + latitude + "\nLongitude: " + longitude + "\nCity: " + city + "\nRegion: " + region);
         }

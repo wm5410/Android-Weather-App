@@ -68,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     List<String> cameraLongitudes = new ArrayList<>();
     List<String> cameraURL = new ArrayList<>();
     boolean isMarkerClicked = false;
-    private int blah = 0;
+    private int cameraNumber = 0;
     /*
      * This creates everything on the maps activity that is shown after the activity starts up.
      */
@@ -119,6 +119,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         intent.putStringArrayListExtra("cameraRegions", (ArrayList<String>) cameraRegions);
                         intent.putStringArrayListExtra("cameraLatitudes", (ArrayList<String>) cameraLatitudes);
                         intent.putStringArrayListExtra("cameraLongitudes", (ArrayList<String>) cameraLongitudes);
+                        intent.putStringArrayListExtra("cameraURL", (ArrayList<String>) cameraURL);
                         intent.putExtra("selectedIndex", index);
                         intent.putExtra("webcamId", "your_webcam_id");
                         intent.putExtra("isMarkerClicked", isMarkerClicked);
@@ -143,74 +144,87 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         //Put extra information so the WebCameraDetail Activity can access it
                         intent.putExtra("isMarkerClicked", isMarkerClicked);
                         intent.putExtra("webcamId", "your_webcam_id");
-
-                        //intent.putExtra("webcamURL", cameraURL.get(0));
-
+                        //Check which camera has been clicked
                         if("Camera 0".equals(cameraIndex)){
+                            //Create strings and set it to the item at index 0
                             String Title = cameraTitles.get(0);
                             String City = cameraCities.get(0);
                             String Region = cameraRegions.get(0);
                             String Latitude = cameraLatitudes.get(0);
                             String Longitude = cameraLongitudes.get(0);
+                            String cameraUrl = cameraURL.get(0);
+                            //Put extra information so the WebCameraDetail Activity can access it
                             intent.putExtra("title", Title);
                             intent.putExtra("city", City);
                             intent.putExtra("region", Region);
                             intent.putExtra("latitude", Latitude);
                             intent.putExtra("longitude", Longitude);
-
-                            //intent.putExtra("URL", cameraURL.get(0));
+                            intent.putExtra("cameraURL", cameraUrl);
                         }
                         else if("Camera 1".equals(cameraIndex)){
+                            //Create strings and set it to the item at index 1
                             String Title = cameraTitles.get(1);
                             String City = cameraCities.get(1);
                             String Region = cameraRegions.get(1);
                             String Latitude = cameraLatitudes.get(1);
                             String Longitude = cameraLongitudes.get(1);
+                            String cameraUrl = cameraURL.get(1);
+                            //Put extra information so the WebCameraDetail Activity can access it
                             intent.putExtra("title", Title);
                             intent.putExtra("city", City);
                             intent.putExtra("region", Region);
                             intent.putExtra("latitude", Latitude);
                             intent.putExtra("longitude", Longitude);
+                            intent.putExtra("cameraURL", cameraUrl);
                         }
                         else if("Camera 2".equals(cameraIndex)){
+                            //Create strings and set it to the item at index 2
                             String Title = cameraTitles.get(2);
                             String City = cameraCities.get(2);
                             String Region = cameraRegions.get(2);
                             String Latitude = cameraLatitudes.get(2);
                             String Longitude = cameraLongitudes.get(2);
+                            String cameraUrl = cameraURL.get(2);
+                            //Put extra information so the WebCameraDetail Activity can access it
                             intent.putExtra("title", Title);
                             intent.putExtra("city", City);
                             intent.putExtra("region", Region);
                             intent.putExtra("latitude", Latitude);
                             intent.putExtra("longitude", Longitude);
+                            intent.putExtra("cameraURL", cameraUrl);
                         }
                         else if("Camera 3".equals(cameraIndex)){
+                            //Create strings and set it to the item at index 3
                             String Title = cameraTitles.get(3);
                             String City = cameraCities.get(3);
                             String Region = cameraRegions.get(3);
                             String Latitude = cameraLatitudes.get(3);
                             String Longitude = cameraLongitudes.get(3);
+                            String cameraUrl = cameraURL.get(3);
+                            //Put extra information so the WebCameraDetail Activity can access it
                             intent.putExtra("title", Title);
                             intent.putExtra("city", City);
                             intent.putExtra("region", Region);
                             intent.putExtra("latitude", Latitude);
                             intent.putExtra("longitude", Longitude);
+                            intent.putExtra("cameraURL", cameraUrl);
                         }
                         else if("Camera 4".equals(cameraIndex)){
+                            //Create strings and set it to the item at index 4
                             String Title = cameraTitles.get(4);
                             String City = cameraCities.get(4);
                             String Region = cameraRegions.get(4);
                             String Latitude = cameraLatitudes.get(4);
                             String Longitude = cameraLongitudes.get(4);
+                            String cameraUrl = cameraURL.get(4);
+                            //Put extra information so the WebCameraDetail Activity can access it
                             intent.putExtra("title", Title);
                             intent.putExtra("city", City);
                             intent.putExtra("region", Region);
                             intent.putExtra("latitude", Latitude);
                             intent.putExtra("longitude", Longitude);
+                            intent.putExtra("cameraURL", cameraUrl);
                         }
-
-
-
                         //Check if the tag matches with the camera teal so that the activity will only start when clicked on a camera marker
                         if("img_mm_camera_teal".equals(markerTag)){
                             startActivity(intent);
@@ -224,6 +238,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 cameraRegions.clear();
                 cameraLatitudes.clear();
                 cameraLongitudes.clear();
+                cameraURL.clear();
             }
             @Override
             public void onError(@NonNull Status status) {
@@ -233,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
     /*
-     * Display location on the map when map loads.
+     * Display location on the map when map loads and gets the last location.
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -563,8 +578,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 JSONArray webcams = jsonObject.getJSONArray("webcams");
                 //Create a new arrayList to store the cameras
                 List<String> webCamerasList = new ArrayList<>();
-                //Set blah to zero
-                blah = 0;
+                //Set cameraNumber to zero
+                cameraNumber = 0;
                 for (int i = 0; i < webcams.length(); i++) {
                     //Get the item
                     JSONObject webcam = webcams.getJSONObject(i);
@@ -572,12 +587,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     title = webcam.getString("title");
                     //Store its webcamId in a string variable
                     String webcamId = webcam.getString("webcamId");
-
+                    //Create JSONObjects to access information from the url
                     JSONObject images = webcam.getJSONObject("images");
                     JSONObject current = images.getJSONObject("current");
+                    //Store the current image as a string variable
                     String previewImageUrl = current.getString("preview");
                     //ImageView imageView = findViewById(R.id.iv_web_camera_footage);
-
                     //Add to the new arrayList
                     webCamerasList.add(title);
                     //Add the title to the list to store it there
@@ -585,11 +600,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Add URL to the array
                     cameraURL.add(previewImageUrl);
                     //Get location information
-                    new GetLocation(webcamId, blah).execute();
+                    new GetLocation(webcamId, cameraNumber).execute();
                     new GetImage(webcamId).execute();
-                    if(blah < 4){
+                    //If cameraNumber is less than 4
+                    if(cameraNumber < 4){
                         //Increment the index
-                        blah++;
+                        cameraNumber++;
                     }
                 }
                 //Convert the webCamerasList to a String[]
@@ -676,7 +692,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Create new json object
                     JSONObject json = new JSONObject(result);
                     Log.d("jsonObject", json.toString());
-                    // Extract latitude and longitude
+                    // Extract latitude and longitude using a JSONObject
                     JSONObject location = json.getJSONObject("location");
                     Latitude = location.getDouble("latitude");
                     Longitude = location.getDouble("longitude");
@@ -757,7 +773,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 processImg(result);
             }
             /*
-             * This method handles the images and displays them in the webCameraDetailActivity.
+             * This method handles the images and returns the url of the image.
              */
             private String processImg(String result)
             {
@@ -768,7 +784,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     JSONObject urls = json.getJSONObject("urls");
                     // Get the "edit" URL
                     String editUrl = urls.getString("edit");
-
                     return editUrl;
                 }
                 catch (Exception e) {
