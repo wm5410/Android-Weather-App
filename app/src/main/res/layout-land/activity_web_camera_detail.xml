@@ -19,9 +19,8 @@
         android:id="@+id/iv_web_camera_footage"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2.5"
-        android:layout_marginRight="50dp"
-        android:layout_marginLeft="50dp"/>
+        android:layout_weight="4"
+        />
 <!--    This displays information about the location such latitude and longitude.-->
     <TextView
         android:id="@+id/tv_camera_title"
@@ -37,5 +36,5 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:layout_weight="2"/>
+        android:layout_weight="1"/>
 </LinearLayout>
