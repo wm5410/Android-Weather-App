@@ -1,24 +1,11 @@
 package com.example.ourassignmentthree;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.libraries.places.api.Places;
-
+/*
+ * This is the main activity of the application. It appears when the app is launched.
+ */
 public class MainActivity extends AppCompatActivity {
     /*
      * This creates everything on the main activity that is shown after the activity starts up.
@@ -32,7 +19,9 @@ public class MainActivity extends AppCompatActivity {
      * This starts up the maps activity.
      */
     public void onClickStart(View view){
+        //Create an intent
         Intent intent = new Intent(this, MapsActivity.class);
+        //Start the new activity
         startActivity(intent);
     }
 }

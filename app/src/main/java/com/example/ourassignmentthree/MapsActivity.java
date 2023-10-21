@@ -1,5 +1,4 @@
 package com.example.ourassignmentthree;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -12,14 +11,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-
 import com.example.ourassignmentthree.databinding.ActivityMapsBinding;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -39,10 +36,8 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -50,7 +45,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+/*
+ * This is the activity which displays the map.
+ */
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     //Declare variables
     protected final int FINE_PERMISSION_CODE = 1;
@@ -77,7 +74,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Initialize Places API
+        // Initialise Places API
         Places.initialize(getApplicationContext(), "AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8");
         //Gets the id for the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -143,7 +140,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Intent intent = new Intent(MapsActivity.this, WebCameraDetailActivity.class);
                         //Put extra information so the WebCameraDetail Activity can access it
                         intent.putExtra("isMarkerClicked", isMarkerClicked);
-                        intent.putExtra("webcamId", "your_webcam_id");
                         //Check which camera has been clicked
                         if("Camera 0".equals(cameraIndex)){
                             //Create strings and set it to the item at index 0
@@ -252,7 +248,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+        //Set the googleMap object
         mMap = googleMap;
+        //GET the current location using the method
         getLastKnownLocation();
     }
     /*
@@ -300,6 +298,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     public void permissionGranted() {
         Toast.makeText(this, "LOCATION ACCESS GRANTED", Toast.LENGTH_SHORT).show();
+        //GET the current location
         getLastKnownLocation();
     }
     /*
@@ -378,6 +377,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          * This is the constructor which initialises two variables.
          */
         public FetchWeatherTask(double latitude, double longitude) {
+            //Initialise variables
             this.latitude = latitude;
             this.longitude = longitude;
         }
@@ -522,6 +522,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          * This is the constructor which sets a latitude and longitude variable.
          */
         public FetchCameraTask(double latitude, double longitude) {
+            //Initialise variables
             this.latitude = latitude;
             this.longitude = longitude;
         }
@@ -597,9 +598,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     webCamerasList.add(title);
                     //Add the title to the list to store it there
                     cameraTitles.add(title);
-                    //Add URL to the array
+                    //Add URL to the list
                     cameraURL.add(previewImageUrl);
-                    //Get location information
+                    //Get location and image information
                     new GetLocation(webcamId, cameraNumber).execute();
                     new GetImage(webcamId).execute();
                     //If cameraNumber is less than 4
@@ -636,11 +637,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
              * This is the constructor which sets an id.
              */
             public GetLocation(String ID, int index) {
+                //Initialise variables
                 this.id = ID;
                 this.index = index;
             }
             /*
-             * This method process the api key and url.
+             * This method processes the api key and url.
              */
             @Override
             protected String doInBackground(Void... voids) {
@@ -691,8 +693,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try{
                     //Create new json object
                     JSONObject json = new JSONObject(result);
-                    Log.d("jsonObject", json.toString());
-                    // Extract latitude and longitude using a JSONObject
+                    // Extract information using a JSONObject
                     JSONObject location = json.getJSONObject("location");
                     Latitude = location.getDouble("latitude");
                     Longitude = location.getDouble("longitude");
@@ -728,10 +729,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
              * This is the constructor of the class and it sets an id.
              */
             public GetImage(String ID) {
+                //Initialise variable
                 this.id = ID;
             }
             /*
-             * This method process the api key and url.
+             * This method processes the api key and url.
              */
             @Override
             protected String doInBackground(Void... voids) {

@@ -1,25 +1,19 @@
 package com.example.ourassignmentthree;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
-
+/*
+ * This activity displays information about a webCamera.
+ */
 public class WebCameraDetailActivity extends AppCompatActivity {
+    //Declare variables
     protected String title;
-    protected int viewCount;
     protected int webcamId;
-    protected String status;
-    protected String lastUpdatedOn;
     protected String latitude;
     protected String longitude;
     protected String city;
@@ -28,7 +22,9 @@ public class WebCameraDetailActivity extends AppCompatActivity {
     protected double longitudeDouble;
     protected boolean isMarkerClicked;
     protected String image;
-
+    /*
+     * This is the onCreate method which executes when the activity starts.
+     */
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +33,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
         //GET the id's of the two textViews
         TextView textViewTitle = findViewById(R.id.tv_camera_title);
         TextView textView = findViewById(R.id.tv_location_info);
+        //GET the id of the imageView
         ImageView imageView = findViewById(R.id.iv_web_camera_footage);
         //Receive the selected index from the intent
         int selectedIndex = getIntent().getIntExtra("selectedIndex", -1);
@@ -49,17 +46,18 @@ public class WebCameraDetailActivity extends AppCompatActivity {
         ArrayList<String> cameraURLS = getIntent().getStringArrayListExtra("cameraURL");
         //Check if a marker was clicked or a item in the listView was clicked
         if(!isMarkerClicked){
-            //Handle the case where a item in the listView is clicked
+            //Handle the case where a item in the listView was clicked
             if(selectedIndex != -1){
                 //Check if the selectedIndex is valid
                 if(selectedIndex >= 0 && selectedIndex < cameraTitles.size()){
+                    //Store information in variables
                     title = cameraTitles.get(selectedIndex);
                     city = cameraCities.get(selectedIndex);
                     region = cameraRegions.get(selectedIndex);
                     latitude = cameraLatitudes.get(selectedIndex);
                     longitude = cameraLongitudes.get(selectedIndex);
                     image = cameraURLS.get(selectedIndex);
-
+                    //IF latitude and longitude are NOT null, convert them to double
                     if(latitude != null && longitude != null){
                         try{
                             latitudeDouble = Double.parseDouble(latitude);
@@ -71,6 +69,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
                     }
                 }
                 else{
+                    //Display errors
                     title = "Invalid selection";
                     city = "Invalid selection";
                     region = "Invalid selection";
@@ -80,6 +79,7 @@ public class WebCameraDetailActivity extends AppCompatActivity {
                 }
             }
             else{
+                //Display errors
                 title = "Title not found";
                 city = "City not found";
                 region = "Region not found";
@@ -87,25 +87,22 @@ public class WebCameraDetailActivity extends AppCompatActivity {
                 longitude = "Longitude not found";
                 image = "Image not found";
             }
-            //GET data from the Maps Activity
-            webcamId = getIntent().getIntExtra("webcamId", 0);
             // Create formatted versions of the latitude and longitude to display it as 3 decimal places
             @SuppressLint("DefaultLocale") String formattedLatitude = String.format("%.3f", latitudeDouble);
             @SuppressLint("DefaultLocale") String formattedLongitude = String.format("%.3f", longitudeDouble);
-
-            //Display data
+            //Display data in the imageView, textViewTitle and textView
             Picasso.get().load(image).into(imageView);
             textViewTitle.setText(title);
             textView.setText("Latitude: " + formattedLatitude + "\nLongitude: " + formattedLongitude + "\nCity: " + city + "\nRegion: " + region);
         }else {
-            // Retrieve data from the intent
+            // Retrieve data from the intent and store them in variables
             title = getIntent().getStringExtra("title");
             city = getIntent().getStringExtra("city");
             region = getIntent().getStringExtra("region");
             latitude = getIntent().getStringExtra("latitude");
             longitude = getIntent().getStringExtra("longitude");
             image = getIntent().getStringExtra("cameraURL");
-            // Display data
+            // Display data in the imageView, textViewTitle and textView
             Picasso.get().load(image).into(imageView);
             textViewTitle.setText(title);
             textView.setText("Latitude: " + latitude + "\nLongitude: " + longitude + "\nCity: " + city + "\nRegion: " + region);

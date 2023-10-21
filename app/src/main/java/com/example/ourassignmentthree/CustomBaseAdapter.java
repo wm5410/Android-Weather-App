@@ -1,16 +1,10 @@
 package com.example.ourassignmentthree;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import com.google.android.gms.maps.model.LatLng;
-
-import java.util.ArrayList;
-
 /*
  * This is the custom adapter which sets the layout for each row in the camera listview.
  */
@@ -23,12 +17,13 @@ public class CustomBaseAdapter extends BaseAdapter {
      * This is the constructor.
      */
     public CustomBaseAdapter(Context context, String[] webCameras){
+        //Initialise variables
         this.context = context;
         this.webCameraList = webCameras;
         layoutInflater = LayoutInflater.from(context);
     }
     /*
-     * This counts the items in the list.
+     * This counts the items in the list and returns it.
      */
     @Override
     public int getCount() {
@@ -48,7 +43,9 @@ public class CustomBaseAdapter extends BaseAdapter {
     public long getItemId(int i) {
         return i;
     }
-    //This gets and sets the view.
+    /*
+     * This gets and sets the view.
+     */
     @Override
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         //Set the view

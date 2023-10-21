@@ -21,7 +21,7 @@
         android:layout_height="0dp"
         android:layout_weight="4"
         />
-<!--    This displays information about the location such latitude and longitude.-->
+<!--    This displays the title of the camera.-->
     <TextView
         android:id="@+id/tv_camera_title"
         android:layout_width="match_parent"
@@ -30,6 +30,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textStyle="bold"
         />
+<!--    This displays the latitude, longitude, city, and region.-->
     <TextView
         android:id="@+id/tv_location_info"
         android:layout_width="match_parent"
