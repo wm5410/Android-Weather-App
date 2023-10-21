@@ -29,6 +29,8 @@
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textStyle="bold"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         />
 <!--    This displays the latitude, longitude, city, and region.-->
     <TextView
