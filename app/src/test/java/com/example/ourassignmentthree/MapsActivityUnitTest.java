@@ -22,7 +22,6 @@ public class MapsActivityUnitTest {
     GoogleMap googleMap;
     private MapsActivity mapsActivity;
     private ActivityController<MapsActivity> activityController;
-
     /*
      * Things to do to set up the test
      * This uses roboelectric and mockito and they need to be initialised
@@ -34,7 +33,6 @@ public class MapsActivityUnitTest {
         activityController = Robolectric.buildActivity(MapsActivity.class).create().start();
         mapsActivity = activityController.get();
     }
-
     /*
      * This is the method and main test that a marker has been added
      */
@@ -43,10 +41,8 @@ public class MapsActivityUnitTest {
         // Test values for location
         LatLng location = new LatLng(-37.784390, 175.294224);
         String markerTitle = "Test Marker";
-
         // Call showMarker method
         mapsActivity.showMarker(location, markerTitle);
-
         // Verify that the addMarker method of GoogleMap is called
         verify(googleMap).addMarker(Mockito.any(MarkerOptions.class));
     }

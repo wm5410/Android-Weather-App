@@ -23,7 +23,6 @@ public class MapClickInstrumentedTest  {
     //Make the maps activity the subject of the test
     @Rule
     public ActivityTestRule<MapsActivity> activityTestRule = new ActivityTestRule<>(MapsActivity.class);
-
     /*
      * This test will simply perform a click on the map
      */
@@ -31,9 +30,7 @@ public class MapClickInstrumentedTest  {
     public void testMapClick() {
         // Find the Google Map fragment by its ID and perform a click action
         onView(withId(R.id.map)).perform(click());
-
     }
-
     /*
      * This test is more in-depth and makes sure that a range of user inputs are valid
      */
@@ -49,7 +46,6 @@ public class MapClickInstrumentedTest  {
                 .perform(ViewActions.swipeRight()) // Swipe right
                 .perform(ViewActions.swipeUp()) // Swipe up
                 .perform(ViewActions.swipeDown()); // Swipe down
-
         // Perform checks
         onView(withId(R.id.map))
                 .check(matches(isDisplayed())) // Check if the map is displayed
