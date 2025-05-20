@@ -44,7 +44,7 @@ This Android application allows users to search for a destination and view weath
 
      ```  
      <resources>
-          <string name="google_maps_key">AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8</string>
+          <string name="google_maps_key">abcd1234</string>
           <string name="openweather_key">YOUR_OPENWEATHERMAP_KEY</string>
           <string name="windy_key">YOUR_WINDY_API_KEY</string>
      </resources>
