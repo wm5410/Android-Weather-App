@@ -42,12 +42,16 @@ This Android application allows users to search for a destination and view weath
 3. **Add API Keys:**
    * Insert your keys:
 
-     XML <br>
-     <resources> <br>
-         <string name="google_maps_key">AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8</string> <br>
-         <string name="openweather_key">YOUR_OPENWEATHERMAP_KEY</string> <br>
-         <string name="windy_key">YOUR_WINDY_API_KEY</string> <br>
-     </resources> <br>
+     ```  
+     <resources>
+          <string name="google_maps_key">AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8</string>
+          <string name="openweather_key">YOUR_OPENWEATHERMAP_KEY</string>
+          <string name="windy_key">YOUR_WINDY_API_KEY</string>
+     </resources>
+      ```  
+
+
+
 
 4. **Build & Run:**
 
