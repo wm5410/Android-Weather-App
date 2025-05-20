@@ -37,15 +37,17 @@ This Android application allows users to search for a destination and view weath
 2. **Open in Android Studio (Flamingo):**
 
    * Select _Open an Existing Project → AssignmentThree_
+  
+
 3. **Add API Keys:**
    * Insert your keys:
 
-     xml
-     <resources>
-         <string name="google_maps_key">AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8</string>
-         <string name="openweather_key">YOUR_OPENWEATHERMAP_KEY</string>
-         <string name="windy_key">YOUR_WINDY_API_KEY</string>
-     </resources>
+     XML <br>
+     <resources><br>
+         <string name="google_maps_key">AIzaSyA5pUxD_2Xi1s-bga4itPVaq-VblEHmxg8</string><br>
+         <string name="openweather_key">YOUR_OPENWEATHERMAP_KEY</string><br>
+         <string name="windy_key">YOUR_WINDY_API_KEY</string><br>
+     </resources><br>
 
 4. **Build & Run:**
 
@@ -62,4 +64,4 @@ This Android application allows users to search for a destination and view weath
 6. **Select** a webcam from the map or list to see full details.
 
 
-![Filters Animation](Screenshots/filters.gif)
+![Screenshot](image.png)
