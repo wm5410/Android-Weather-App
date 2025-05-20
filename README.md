@@ -62,6 +62,7 @@ This Android application allows users to search for a destination and view weath
 4. View markers for the **destination**, **weather**, and **nearest webcams**.
 5. **Tap** weather icon to expand details.
 6. **Select** a webcam from the map or list to see full details.
+<be>
 
-
+## Screenshot
 ![Screenshot](image.png)
