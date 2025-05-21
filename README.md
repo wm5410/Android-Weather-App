@@ -1,10 +1,4 @@
-# AssignmentThree: Android Maps and APIs
-
-**Course:** COMPX202/242 (HAM/TGA)
-
-**Due Date:** Friday, 20th October 2025, 11:59 PM 2023
-
----
+# Android Maps and APIs
 
 ## Project Overview
 This Android application allows users to search for a destination and view weather data and live webcam feeds for that location on an interactive map. It demonstrates use of Google Maps and Places APIs, integration with external weather and webcam services, responsive UI design, and robust testing.
